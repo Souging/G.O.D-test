@@ -21,20 +21,15 @@ VALIDATOR_DOCKER_IMAGE_DIFFUSION = "diagonalge/tuning_validator_diffusion:latest
 
 CONTAINER_EVAL_RESULTS_PATH = "/aplp/evaluation_results.json"
 
-
+CONFIG_DIR = "core/config/"
+OUTPUT_DIR = "core/outputs/"
 CACHE_DIR = "~/.cache/huggingface"
 CACHE_DIR_HUB = os.path.expanduser("~/.cache/huggingface/hub")
 DIFFUSION_DATASET_DIR = "core/dataset/images"
-CONFIG_DIR = os.path.expanduser("~/axolotl/configs")
-OUTPUT_DIR = os.path.expanduser("~/axolotl/outputs")
-DIFFUSION_DATASET_DIR = os.path.expanduser("~/axolotl/diffusion_data")
+
 DIFFUSION_REPEATS = 10
 DIFFUSION_DEFAULT_INSTANCE_PROMPT = "lora"
 DIFFUSION_DEFAULT_CLASS_PROMPT = "style"
-KOHYA_CONFIG_DIR = os.path.expanduser("~/kohya_train/configs")
-KOHYA_OUTPUT_DIR = os.path.expanduser("~/kohya_train/outputs")
-KOHYA_IMAGES_DIR = os.path.expanduser("~/kohya_train/images")
-
 
 MIN_IMAGE_TEXT_PAIRS = 10
 MAX_IMAGE_TEXT_PAIRS = 50
