@@ -98,7 +98,7 @@ def _load_and_modify_config_diffusion(model: str, task_id: str, expected_repo_na
     with open(cst.CONFIG_TEMPLATE_PATH_DIFFUSION, "r") as file:
         config = toml.load(file)
     config["pretrained_model_name_or_path"] = model
-    config["train_data_dir"] = os.path.expanduser(f"~/kohya_train/images/{task_id}/img/")
+    config["train_data_dir"] = f"/dataset/images/{task_id}/img/"
     config["huggingface_token"] = cst.HUGGINGFACE_TOKEN
     config["huggingface_repo_id"] = f"{cst.HUGGINGFACE_USERNAME}/{expected_repo_name or str(uuid.uuid4())}"
     return config
@@ -158,17 +158,7 @@ def start_tuning_local_diffusion(job: DiffusionJob):
     logger.info("STARTING LOCAL DIFFUSION TUNING")
     logger.info("=" * 80)
 
-    # 定义本地路径
-    local_config_dir = os.path.expanduser("~/kohya_train/configs")
-    local_output_dir = os.path.expanduser("~/kohya_train/outputs")
-    local_images_dir = os.path.expanduser("~/kohya_train/images")
-    
-    # 确保目录存在
-    os.makedirs(local_config_dir, exist_ok=True)
-    os.makedirs(local_output_dir, exist_ok=True)
-    os.makedirs(local_images_dir, exist_ok=True)
-    
-    config_path = os.path.join(local_config_dir, f"{job.job_id}.toml")
+    config_path = os.path.join(cst.CONFIG_DIR, f"{job.job_id}.toml")
 
     config = _load_and_modify_config_diffusion(job.model, job.job_id, job.expected_repo_name)
     save_config_toml(config, config_path)
@@ -182,7 +172,6 @@ def start_tuning_local_diffusion(job: DiffusionJob):
         instance_prompt=cst.DIFFUSION_DEFAULT_INSTANCE_PROMPT,
         class_prompt=cst.DIFFUSION_DEFAULT_CLASS_PROMPT,
         job_id=job.job_id,
-        #output_dir=local_images_dir  # 确保数据集被放置在正确的本地路径
     )
 
     local_env = LocalEnvironmentDiffusion(
@@ -195,9 +184,9 @@ def start_tuning_local_diffusion(job: DiffusionJob):
     
     # 添加配置目录环境变量
     env.update({
-        "CONFIG_DIR": local_config_dir,
-        "OUTPUT_DIR": local_output_dir,
-        "DATASET_DIR": local_images_dir
+        "CONFIG_DIR": "/dataset/configs",
+        "OUTPUT_DIR": "/dataset/outputs",
+        "DATASET_DIR":"/dataset/images"
     })
 
     try:
@@ -223,7 +212,7 @@ def start_tuning_local_diffusion(job: DiffusionJob):
 
     finally:
         # 清理临时数据（如果需要）
-        train_data_path = os.path.join(local_images_dir, job.job_id)
+        train_data_path = f"{cst.DIFFUSION_DATASET_DIR}/{job.job_id}"
         if os.path.exists(train_data_path):
             logger.info(f"Cleaning up temporary data at {train_data_path}")
             shutil.rmtree(train_data_path)
