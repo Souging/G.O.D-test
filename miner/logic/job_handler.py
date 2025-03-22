@@ -182,7 +182,7 @@ def start_tuning_local_diffusion(job: DiffusionJob):
         instance_prompt=cst.DIFFUSION_DEFAULT_INSTANCE_PROMPT,
         class_prompt=cst.DIFFUSION_DEFAULT_CLASS_PROMPT,
         job_id=job.job_id,
-        output_dir=local_images_dir  # 确保数据集被放置在正确的本地路径
+        #output_dir=local_images_dir  # 确保数据集被放置在正确的本地路径
     )
 
     local_env = LocalEnvironmentDiffusion(
