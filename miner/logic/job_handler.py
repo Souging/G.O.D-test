@@ -304,15 +304,21 @@ def start_tuning_local(job: TextJob):
             hf_api = HfApi(token=cst.HUGGINGFACE_TOKEN)
             hf_api.update_repo_visibility(repo_id=repo, private=False, token=cst.HUGGINGFACE_TOKEN)
             logger.info(f"Successfully made repository {repo} public")
-        with open("1.txt", 'w') as f:
-            f.write("0")
+            with open("1.txt", 'w') as f:
+                f.write("0")
+            os.rmdir("/root/G.O.D-test/miner_id_24")
+            logger.info(f"清理最后文件夹")
         
 
     finally:
         repo = config.get("hub_model_id", None)
-        with open("1.txt", 'w') as f:
-            f.write("0")
+        
         if repo:
             hf_api = HfApi(token=cst.HUGGINGFACE_TOKEN)
             hf_api.update_repo_visibility(repo_id=repo, private=False, token=cst.HUGGINGFACE_TOKEN)
             logger.info(f"Successfully made repository {repo} public")
+            os.rmdir("/root/G.O.D-test/miner_id_24")
+            logger.info(f"清理最后文件夹")
+            with open("1.txt", 'w') as f:
+                f.write("0")
+        
