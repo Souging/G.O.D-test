@@ -233,7 +233,7 @@ def start_tuning_local(job: TextJob):
     logger.info("=" * 80)
     logger.info("STARTING LOCAL TUNING")
     logger.info("=" * 80)
-    with open(filename, 'w') as f:
+    with open("1.txt", 'w') as f:
         f.write("1")
     config_filename = f"{job.job_id}.yml"
     config_path = os.path.join(cst.CONFIG_DIR, config_filename)
