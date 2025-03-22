@@ -21,7 +21,7 @@ def create_dataset_entry(
     file_format: FileFormat,
 ) -> dict:
     dataset_entry = {"path": dataset}
-    shutil.copy( f"/workspace/input_data/{os.path.basename(dataset)}", "/workspace/input_data")
+    shutil.copy( f"/root/G.O.D-test/core/data/{os.path.basename(dataset)}", "/workspace/input_data")
     if file_format == FileFormat.JSON:
         dataset_entry = {"path": f"/workspace/input_data/{os.path.basename(dataset)}"}
 
