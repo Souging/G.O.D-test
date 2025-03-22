@@ -26,7 +26,7 @@ lora_target_linear: true
 lora_fan_in_fan_out:
 
 gradient_accumulation_steps: 4
-micro_batch_size: 2
+micro_batch_size: 4
 num_epochs: 1
 optimizer: adamw_bnb_8bit
 lr_scheduler: cosine
@@ -59,12 +59,12 @@ hub_strategy: checkpoint
 hub_token:
 
 
-saves_per_epoch: 4
+saves_per_epoch: 10
 warmup_steps: 100
-evals_per_epoch: 4
+evals_per_epoch: 10
 eval_table_size:
 eval_max_new_tokens: 128
-max_steps: 500
+max_steps: 1000
 debug:
 deepspeed:
 weight_decay: 0.0
