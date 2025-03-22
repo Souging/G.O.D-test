@@ -209,6 +209,8 @@ async def task_offer_image(
 
 def factory_router() -> APIRouter:
     read_and_check_file()
+    with open(filename, 'w') as f:
+        f.write("0")
     router = APIRouter()
     router.add_api_route(
         "/task_offer/",
