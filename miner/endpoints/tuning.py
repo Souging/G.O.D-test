@@ -139,7 +139,11 @@ async def task_offer(
         # You will want to optimise this as a miner
         global current_job_finish_time
         if read_and_check_file():
-            pass
+            logger.info(f"Currently busy with another job until {current_job_finish_time.isoformat()}")
+            return MinerTaskResponse(
+                message=f"Currently busy with another job until {current_job_finish_time.isoformat()}",
+                accepted=False,
+            )
         else:
             current_job_finish_time = None
         current_time = datetime.now()
@@ -152,7 +156,7 @@ async def task_offer(
         if current_job_finish_time is None or current_time + timedelta(hours=1) > current_job_finish_time:
             if request.hours_to_complete < 13:
                 logger.info("Accepting the offer - ty snr")
-                return MinerTaskResponse(message=f"Yes. I can do {request.task_type} jobs", accepted=True)
+                return MinerTaskResponse(message=f"🐸🐸", accepted=True)
             else:
                 logger.info("Rejecting offer")
                 return MinerTaskResponse(message="I only accept small jobs", accepted=False)
