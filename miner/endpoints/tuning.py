@@ -135,7 +135,8 @@ async def task_offer(
     worker_config: WorkerConfig = Depends(get_worker_config),
 ) -> MinerTaskResponse:
     try:
-        logger.info("An offer has come through")
+        logger.info("An text offer has come in~")
+        logger.info(f"{request}")
         # You will want to optimise this as a miner
         global current_job_finish_time
         current_time = datetime.now()
@@ -153,6 +154,7 @@ async def task_offer(
                 logger.info("Rejecting offer")
                 return MinerTaskResponse(message="I only accept small jobs", accepted=False)
         else:
+            logger.info(f"Currently busy with another job until {current_job_finish_time.isoformat()}")
             return MinerTaskResponse(
                 message=f"Currently busy with another job until {current_job_finish_time.isoformat()}",
                 accepted=False,
