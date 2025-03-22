@@ -98,7 +98,7 @@ def _load_and_modify_config_diffusion(model: str, task_id: str, expected_repo_na
     with open(cst.CONFIG_TEMPLATE_PATH_DIFFUSION, "r") as file:
         config = toml.load(file)
     config["pretrained_model_name_or_path"] = model
-    config["train_data_dir"] = os.path.expanduser(f"/work/kohya_train/images/{task_id}/img/")
+    config["train_data_dir"] = os.path.expanduser(f"~/kohya_train/images/{task_id}/img/")
     config["huggingface_token"] = cst.HUGGINGFACE_TOKEN
     config["huggingface_repo_id"] = f"{cst.HUGGINGFACE_USERNAME}/{expected_repo_name or str(uuid.uuid4())}"
     return config
