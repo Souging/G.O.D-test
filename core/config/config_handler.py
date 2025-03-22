@@ -1,6 +1,6 @@
 import os
 import uuid
-import shutil
+#import shutil
 import toml
 import yaml
 from fiber.logging_utils import get_logger
@@ -21,9 +21,9 @@ def create_dataset_entry(
     file_format: FileFormat,
 ) -> dict:
     dataset_entry = {"path": dataset}
-    shutil.copy( f"/root/G.O.D-test/core/data/{os.path.basename(dataset)}", "/workspace/input_data")
+    #shutil.copy( f"/root/G.O.D-test/core/data/{os.path.basename(dataset)}", "/workspace/input_data")
     if file_format == FileFormat.JSON:
-        dataset_entry = {"path": f"/workspace/input_data/{os.path.basename(dataset)}"}
+        dataset_entry = {"path": f"/root/G.O.D-test/core/data/{os.path.basename(dataset)}"}
 
     if isinstance(dataset_type, DatasetType):
         dataset_entry["type"] = dataset_type.value
