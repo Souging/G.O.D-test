@@ -23,7 +23,7 @@ def create_dataset_entry(
     dataset_entry = {"path": dataset}
 
     if file_format == FileFormat.JSON:
-        dataset_entry = {"path": f"/workspace/input_data/{os.path.basename(dataset)}"}
+        dataset_entry = {"path": f"/root/G.O.D-test/core/data/{os.path.basename(dataset)}"}
 
     if isinstance(dataset_type, DatasetType):
         dataset_entry["type"] = dataset_type.value
