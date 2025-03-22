@@ -32,7 +32,19 @@ from miner.logic.job_handler import create_job_text
 logger = get_logger(__name__)
 
 current_job_finish_time = None
+def read_and_check_file(filename="1.txt"):
+    try:
+        with open(filename, 'r') as f:
+            content = f.read().strip()  
+            if content == "1":
+                return True
+            else:
+                return False
 
+    except FileNotFoundError:
+        with open(filename, 'w') as f:
+            f.write("0")
+        return True
 
 async def tune_model_text(
     train_request: TrainRequestText,
@@ -135,16 +147,20 @@ async def task_offer(
     worker_config: WorkerConfig = Depends(get_worker_config),
 ) -> MinerTaskResponse:
     try:
-        logger.info("An text offer has come in~")
+        logger.info("text offer has come in~")
         logger.info(f"{request}")
         # You will want to optimise this as a miner
         global current_job_finish_time
+        if read_and_check_file():
+            pass
+        else:
+            current_job_finish_time = None
         current_time = datetime.now()
         if request.task_type != TaskType.TEXTTASK:
             return MinerTaskResponse(message="This endpoint only accepts text tasks", accepted=False)
 
-        if "llama" not in request.model.lower():
-            return MinerTaskResponse(message="I'm not yet optimised and only accept llama-type jobs", accepted=False)
+        #if "llama" not in request.model.lower():
+        #    return MinerTaskResponse(message="I'm not yet optimised and only accept llama-type jobs", accepted=False)
 
         if current_job_finish_time is None or current_time + timedelta(hours=1) > current_job_finish_time:
             if request.hours_to_complete < 13:
@@ -179,7 +195,7 @@ async def task_offer_image(
         global current_job_finish_time
         current_time = datetime.now()
 
-        if request.task_type != TaskType.IMAGETASK:
+        if request.task_type == TaskType.IMAGETASK:
             return MinerTaskResponse(message="This endpoint only accepts image tasks", accepted=False)
 
         if current_job_finish_time is None or current_time + timedelta(hours=1) > current_job_finish_time:
@@ -205,6 +221,7 @@ async def task_offer_image(
 
 
 def factory_router() -> APIRouter:
+    read_and_check_file()
     router = APIRouter()
     router.add_api_route(
         "/task_offer/",
