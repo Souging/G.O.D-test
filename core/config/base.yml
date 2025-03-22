@@ -60,11 +60,11 @@ hub_token:
 
 
 saves_per_epoch: 4
-warmup_steps: 20
+warmup_steps: 500
 evals_per_epoch: 4
 eval_table_size:
 eval_max_new_tokens: 128
-max_steps: 20
+max_steps: 500
 debug:
 deepspeed:
 weight_decay: 0.0
