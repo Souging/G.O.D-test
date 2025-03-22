@@ -26,25 +26,12 @@ from core.utils import download_s3_file
 from miner.config import WorkerConfig
 from miner.dependencies import get_worker_config
 from miner.logic.job_handler import create_job_diffusion
-from miner.logic.job_handler import create_job_text
-
+from miner.logic.job_handler import create_job_text 
+from miner.logic.job_handler import read_and_check_file
 
 logger = get_logger(__name__)
 
 current_job_finish_time = None
-def read_and_check_file(filename="1.txt"):
-    try:
-        with open(filename, 'r') as f:
-            content = f.read().strip()  
-            if content == "1":
-                return True
-            else:
-                return False
-
-    except FileNotFoundError:
-        with open(filename, 'w') as f:
-            f.write("0")
-        return True
 
 async def tune_model_text(
     train_request: TrainRequestText,
