@@ -24,7 +24,19 @@ from core.models.utility_models import TextJob
 
 
 logger = get_logger(__name__)
+def read_and_check_file(filename="1.txt"):
+    try:
+        with open(filename, 'r') as f:
+            content = f.read().strip()  
+            if content == "1":
+                return True
+            else:
+                return False
 
+    except FileNotFoundError:
+        with open(filename, 'w') as f:
+            f.write("0")
+        return True
 
 @dataclass
 class LocalEnvironmentDiffusion:
@@ -292,10 +304,14 @@ def start_tuning_local(job: TextJob):
             hf_api = HfApi(token=cst.HUGGINGFACE_TOKEN)
             hf_api.update_repo_visibility(repo_id=repo, private=False, token=cst.HUGGINGFACE_TOKEN)
             logger.info(f"Successfully made repository {repo} public")
+        with open("1.txt", 'w') as f:
+            f.write("0")
         
 
     finally:
         repo = config.get("hub_model_id", None)
+        with open("1.txt", 'w') as f:
+            f.write("0")
         if repo:
             hf_api = HfApi(token=cst.HUGGINGFACE_TOKEN)
             hf_api.update_repo_visibility(repo_id=repo, private=False, token=cst.HUGGINGFACE_TOKEN)
