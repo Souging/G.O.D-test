@@ -12,7 +12,7 @@ dataset_prepared_path:
 val_set_size: 0.05
 output_dir: miner_id_24
 
-sequence_len: 512
+sequence_len: 1024
 sample_packing: false
 pad_to_sequence_len: true
 trust_remote_code: true
@@ -27,7 +27,7 @@ lora_fan_in_fan_out:
 
 gradient_accumulation_steps: 4
 micro_batch_size: 4
-num_epochs: 1
+num_epochs: 5
 optimizer: adamw_bnb_8bit
 lr_scheduler: cosine
 learning_rate: 0.0002
@@ -60,11 +60,11 @@ hub_token:
 
 
 saves_per_epoch: 10
-warmup_steps: 100
+warmup_steps: 200
 evals_per_epoch: 10
 eval_table_size:
 eval_max_new_tokens: 128
-max_steps: 1000
+max_steps: 1024
 debug:
 deepspeed:
 weight_decay: 0.0
