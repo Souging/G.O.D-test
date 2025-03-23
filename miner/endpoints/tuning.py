@@ -157,15 +157,18 @@ async def task_offer(
         api = HfApi()
         model_info = api.model_info(model_name)
         total_bytes = model_info.safetensors.total
-        if 1000000000 > total_bytes:
+
+        if 1000000000 < total_bytes < 15000000000:
+            pass
+        else:
             logger.info(f"模型大小: {total_bytes},只接1B以上")
             return MinerTaskResponse(
-                message=f"busy ",
+                message=f"I only accept 1B-11B jobs",
                 accepted=False,
             )
 
         if current_job_finish_time is None or current_time + timedelta(hours=1) > current_job_finish_time:
-            if 3 < request.hours_to_complete < 13:
+            if 1 <= request.hours_to_complete <= 13:
                 logger.info("Accepting the offer - ty snr")
                 return MinerTaskResponse(message=f"🐸🐸", accepted=True)
             else:
@@ -184,7 +187,7 @@ async def task_offer(
     except Exception as e:
         logger.error(f"Unexpected error in task_offer: {str(e)}")
         logger.error(f"Error type: {type(e)}")
-        raise HTTPException(status_code=500, detail=f"Error processing task offer: {str(e)}")
+        return MinerTaskResponse(message="I only accept small jobs", accepted=False)
 
 
 async def task_offer_image(
@@ -261,7 +264,7 @@ def factory_router() -> APIRouter:
         tags=["Subnet"],
         methods=["POST"],
         response_model=TrainResponse,
-        #dependencies=[Depends(blacklist_low_stake), Depends(verify_request)],
+        dependencies=[Depends(blacklist_low_stake), Depends(verify_request)],
     )
     router.add_api_route(
         "/start_training_image/",
