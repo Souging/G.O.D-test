@@ -85,10 +85,28 @@ def _load_and_modify_config(
     """
     Loads the config template and modifies it to create a new job config.
     """
-    logger.info("Loading config template")
-    with open(cst.CONFIG_TEMPLATE_PATH, "r") as file:
-        config = yaml.safe_load(file)
-
+    api = HfApi()
+    model_info = api.model_info(model)
+    total_bytes = model_info.safetensors.total
+    #CONFIG_TEMPLATE_PATH_3B = CONFIG_DIR + "3b.yml"
+    #CONFIG_TEMPLATE_PATH_7B = CONFIG_DIR + "7b.yml"
+    #CONFIG_TEMPLATE_PATH_14B = CONFIG_DIR + "14b.yml"
+    if 5000000000 >= total_bytes >= 2200000000:
+        logger.info("Loading 3B config template")
+        with open(cst.CONFIG_TEMPLATE_PATH_3B, "r") as file:
+            config = yaml.safe_load(file)
+    elif 8000000000 >= total_bytes >= 5000000000:
+        logger.info("Loading 7B config template")
+        with open(cst.CONFIG_TEMPLATE_PATH_7B, "r") as file:
+            config = yaml.safe_load(file)
+    elif 15000000000 >= total_bytes >= 8000000001:
+        logger.info("Loading 14B config template")
+        with open(cst.CONFIG_TEMPLATE_PATH_14B, "r") as file:
+            config = yaml.safe_load(file)    
+    else:
+        logger.info("Loading 14B config template")
+        with open(cst.CONFIG_TEMPLATE_PATH, "r") as file:
+            config = yaml.safe_load(file)
     config["datasets"] = []
 
     dataset_entry = create_dataset_entry(dataset, dataset_type, file_format)
@@ -287,15 +305,10 @@ def start_tuning_local(job: TextJob):
 
     except Exception as e:
         logger.error(f"Error processing job: {str(e)}")
-        repo = config.get("hub_model_id", None)
-        if repo:
-            hf_api = HfApi(token=cst.HUGGINGFACE_TOKEN)
-            hf_api.update_repo_visibility(repo_id=repo, private=False, token=cst.HUGGINGFACE_TOKEN)
-            logger.info(f"Successfully made repository {repo} public")
-            with open("1.txt", 'w') as f:
-                f.write("0")
-            shutil.rmtree("/root/G.O.D-test/miner_id_24")
-            logger.info(f"Clean")
+        with open("1.txt", 'w') as f:
+            f.write("0")
+        shutil.rmtree("/root/G.O.D-test/miner_id_24")
+        logger.info(f"Clean")
         
 
     finally:
