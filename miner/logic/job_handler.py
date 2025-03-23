@@ -307,8 +307,8 @@ def start_tuning_local(job: TextJob):
             logger.info(f"Successfully made repository {repo} public")
             with open("1.txt", 'w') as f:
                 f.write("0")
-            #shutil.rmtree("/root/G.O.D-test/miner_id_24")
-            #logger.info(f"清理最后文件夹")
+            shutil.rmtree("/root/G.O.D-test/miner_id_24")
+            logger.info(f"清理最后文件夹")
         
 
     finally:
@@ -318,8 +318,8 @@ def start_tuning_local(job: TextJob):
             hf_api = HfApi(token=cst.HUGGINGFACE_TOKEN)
             hf_api.update_repo_visibility(repo_id=repo, private=False, token=cst.HUGGINGFACE_TOKEN)
             logger.info(f"Successfully made repository {repo} public")
-            #shutil.rmtree("/root/G.O.D-test/miner_id_24")
-            #logger.info(f"清理最后文件夹")
+            shutil.rmtree("/root/G.O.D-test/miner_id_24")
+            logger.info(f"清理最后文件夹")
             with open("1.txt", 'w') as f:
                 f.write("0")
         
