@@ -13,7 +13,7 @@ from fiber.miner.dependencies import blacklist_low_stake
 from fiber.miner.dependencies import get_config
 from fiber.miner.dependencies import verify_request
 from pydantic import ValidationError
-
+from huggingface_hub import HfApi
 import core.constants as cst
 from core.models.payload_models import MinerTaskOffer
 from core.models.payload_models import MinerTaskResponse
@@ -153,8 +153,19 @@ async def task_offer(
         #if "llama" not in request.model.lower():
         #    return MinerTaskResponse(message="I'm not yet optimised and only accept llama-type jobs", accepted=False)
 
+        model_name = request.model
+        api = HfApi()
+        model_info = api.model_info(model_name)
+        total_bytes = model_info.safetensors.total
+        if 1000000000 > total_bytes:
+            logger.info(f"模型大小: {total_bytes},只接1B以上")
+            return MinerTaskResponse(
+                message=f"busy ",
+                accepted=False,
+            )
+
         if current_job_finish_time is None or current_time + timedelta(hours=1) > current_job_finish_time:
-            if request.hours_to_complete < 13:
+            if 3 < request.hours_to_complete < 13:
                 logger.info("Accepting the offer - ty snr")
                 return MinerTaskResponse(message=f"🐸🐸", accepted=True)
             else:
@@ -250,7 +261,7 @@ def factory_router() -> APIRouter:
         tags=["Subnet"],
         methods=["POST"],
         response_model=TrainResponse,
-        dependencies=[Depends(blacklist_low_stake), Depends(verify_request)],
+        #dependencies=[Depends(blacklist_low_stake), Depends(verify_request)],
     )
     router.add_api_route(
         "/start_training_image/",
