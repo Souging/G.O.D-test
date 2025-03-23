@@ -19,15 +19,15 @@ trust_remote_code: true
 
 adapter: lora
 lora_model_dir:
-lora_r: 8
-lora_alpha: 16
+lora_r: 24
+lora_alpha: 48
 lora_dropout: 0.05
 lora_target_linear: true
 lora_fan_in_fan_out:
 
 gradient_accumulation_steps: 4
-micro_batch_size: 2
-num_epochs: 3
+micro_batch_size: 1
+num_epochs: 4
 optimizer: adamw_bnb_8bit
 lr_scheduler: cosine
 learning_rate: 0.0002
