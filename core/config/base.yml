@@ -64,7 +64,7 @@ warmup_steps: 150
 evals_per_epoch: 100
 eval_table_size:
 eval_max_new_tokens: 128
-max_steps: 1000
+max_steps: 750
 debug:
 deepspeed:
 weight_decay: 0.01
