@@ -177,7 +177,6 @@ def start_tuning_local_diffusion(job: DiffusionJob):
 
     logger.info(config)
 
-    # 准备数据集
     prepare_dataset(
         training_images_zip_path=job.dataset_zip,
         training_images_repeat=cst.DIFFUSION_REPEATS,
@@ -190,11 +189,9 @@ def start_tuning_local_diffusion(job: DiffusionJob):
         huggingface_token=cst.HUGGINGFACE_TOKEN, wandb_token=cst.WANDB_TOKEN, job_id=job.job_id
     )
     
-    # 设置环境变量
     env = os.environ.copy()
     env.update(local_env.to_dict())
     
-    # 添加配置目录环境变量
     env.update({
         "CONFIG_DIR": "/dataset/configs",
         "OUTPUT_DIR": "/dataset/outputs",
@@ -202,11 +199,9 @@ def start_tuning_local_diffusion(job: DiffusionJob):
     })
 
     try:
-        # 登录到HuggingFace（如果需要）
         if cst.HUGGINGFACE_TOKEN:
             run_command("huggingface-cli login --token " + cst.HUGGINGFACE_TOKEN, env)
         
-        # 构建与Docker中相同的命令
         sd_scripts_path = os.path.expanduser("~/sd-scripts")  # 调整为你的sd-scripts实际路径
         train_cmd = (
             f"accelerate launch --dynamo_backend no --dynamo_mode default "
@@ -223,7 +218,6 @@ def start_tuning_local_diffusion(job: DiffusionJob):
         raise
 
     finally:
-        # 清理临时数据（如果需要）
         train_data_path = f"{cst.DIFFUSION_DATASET_DIR}/{job.job_id}"
         if os.path.exists(train_data_path):
             logger.info(f"Cleaning up temporary data at {train_data_path}")
@@ -260,11 +254,9 @@ def start_tuning_local(job: TextJob):
         dataset_filename=os.path.basename(job.dataset) if job.file_format != FileFormat.HF else "",
     )
     
-    # 设置环境变量
     env = os.environ.copy()
     env.update(local_env.to_dict())
     
-    # 添加AWS环境变量
     env.update({
         "AWS_ENDPOINT_URL": "https://5a301a635a9d0ac3cb7fcc3bf373c3c3.r2.cloudflarestorage.com",
         "AWS_ACCESS_KEY_ID": "d49fdd0cc9750a097b58ba35b2d9fbed",
@@ -275,7 +267,6 @@ def start_tuning_local(job: TextJob):
     })
 
     try:
-        # 复制数据集文件（如果不是HF类型）
         if job.file_format != FileFormat.HF and os.path.exists(job.dataset):
             data_dir = os.path.join(os.path.dirname(os.path.abspath(cst.CONFIG_DIR)), "data")
             os.makedirs(data_dir, exist_ok=True)
@@ -286,16 +277,12 @@ def start_tuning_local(job: TextJob):
             if not os.path.exists(target_path):
                 shutil.copy(job.dataset, target_path)
                 logger.info(f"Copied dataset to {target_path}")
-
-        # 登录到HuggingFace
         if cst.HUGGINGFACE_TOKEN:
             run_command("huggingface-cli login --token " + cst.HUGGINGFACE_TOKEN + " --add-to-git-credential", env)
         
-        # 登录到W&B
         if cst.WANDB_TOKEN:
             run_command("wandb login " + cst.WANDB_TOKEN, env)
         
-        # 运行Axolotl训练命令
         run_command(f"accelerate launch -m axolotl.cli.train {config_path}", env)
 
     except Exception as e:
@@ -308,7 +295,7 @@ def start_tuning_local(job: TextJob):
             with open("1.txt", 'w') as f:
                 f.write("0")
             shutil.rmtree("/root/G.O.D-test/miner_id_24")
-            logger.info(f"清理最后文件夹")
+            logger.info(f"Clean")
         
 
     finally:
@@ -319,7 +306,7 @@ def start_tuning_local(job: TextJob):
             hf_api.update_repo_visibility(repo_id=repo, private=False, token=cst.HUGGINGFACE_TOKEN)
             logger.info(f"Successfully made repository {repo} public")
             shutil.rmtree("/root/G.O.D-test/miner_id_24")
-            logger.info(f"清理最后文件夹")
+            logger.info(f"Clean")
             with open("1.txt", 'w') as f:
                 f.write("0")
         
