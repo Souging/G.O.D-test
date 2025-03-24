@@ -9,15 +9,16 @@ strict: false
 #chat_template: llama3
 datasets:
 dataset_prepared_path:
-debug: null
-deepspeed: null
+debug: 
+deepspeed: 
 eval_max_new_tokens: 128
 eval_steps: 0
-evals_per_epoch: null
-flash_attention: true
-fp16: false
-fsdp: null
-fsdp_config: null
+evals_per_epoch: 
+fp16:
+bf16: auto
+
+fsdp: 
+fsdp_config: 
 gradient_accumulation_steps: 4
 gradient_checkpointing: false
 group_by_length: true
@@ -25,27 +26,30 @@ group_by_length: true
 learning_rate: 0.000202
 load_in_4bit: false
 load_in_8bit: false
-local_rank: null
+local_rank: 
 logging_steps: 1
+
+adapter: lora
+lora_model_dir:
+lora_r: 32
 lora_alpha: 64
 lora_dropout: 0.05
-lora_fan_in_fan_out: null
-lora_model_dir: null
-lora_r: 32
+lora_fan_in_fan_out: 
 lora_target_linear: true
 lr_scheduler: cosine
-max_steps: 700
+max_steps: 500
 micro_batch_size: 2
 model_type: AutoModelForCausalLM
 num_epochs: 10
 optimizer: adamw_bnb_8bit
 output_dir: miner_id_24
 pad_to_sequence_len: true
-resume_from_checkpoint: null
-s2_attention: null
+resume_from_checkpoint: 
+flash_attention: true
+s2_attention: 
 sample_packing: false
 save_steps: 0
-saves_per_epoch: null
+saves_per_epoch: 
 seed: 20
 sequence_len: 1024
 strict: false
@@ -55,7 +59,7 @@ train_on_inputs: false
 trust_remote_code: true
 warmup_steps: 100
 weight_decay: 0.0
-xformers_attention: null
+xformers_attention: 
 
 wandb_project: Gradients-On-Demand
 wandb_entity:
