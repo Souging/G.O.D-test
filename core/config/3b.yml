@@ -9,43 +9,53 @@ strict: false
 #chat_template: llama3
 datasets:
 dataset_prepared_path:
-val_set_size: 0.05
-output_dir: miner_id_24
+debug: null
+deepspeed: null
+eval_max_new_tokens: 128
+eval_steps: 0
+evals_per_epoch: null
+flash_attention: true
+fp16: false
+fsdp: null
+fsdp_config: null
+gradient_accumulation_steps: 4
+gradient_checkpointing: false
+group_by_length: true
 
-sequence_len: 1024
-sample_packing: false
-pad_to_sequence_len: true
-trust_remote_code: true
-
-adapter: lora
-lora_model_dir:
-lora_r: 24
+learning_rate: 0.000202
+load_in_4bit: false
+load_in_8bit: false
+local_rank: null
+logging_steps: 1
 lora_alpha: 48
 lora_dropout: 0.05
+lora_fan_in_fan_out: null
+lora_model_dir: null
+lora_r: 24
 lora_target_linear: true
-lora_fan_in_fan_out:
-
-gradient_accumulation_steps: 4
-micro_batch_size: 4
-num_epochs: 4
-optimizer: adamw_bnb_8bit
 lr_scheduler: cosine
-learning_rate: 0.0002
-
-train_on_inputs: false
-group_by_length: false
-bf16: auto
-fp16:
+max_steps: 700
+micro_batch_size: 4
+model_type: AutoModelForCausalLM
+num_epochs: 10
+optimizer: adamw_bnb_8bit
+output_dir: miner_id_24
+pad_to_sequence_len: true
+resume_from_checkpoint: null
+s2_attention: null
+sample_packing: false
+save_steps: 0
+saves_per_epoch: null
+seed: 20
+sequence_len: 1024
+strict: false
 tf32: false
-
-gradient_checkpointing: false
-early_stopping_patience:
-resume_from_checkpoint:
-local_rank:
-logging_steps: 1
-xformers_attention:
-flash_attention: true
-s2_attention:
+tokenizer_type: AutoTokenizer
+train_on_inputs: false
+trust_remote_code: true
+warmup_steps: 100
+weight_decay: 0.0
+xformers_attention: null
 
 wandb_project: Gradients-On-Demand
 wandb_entity:
@@ -57,16 +67,3 @@ hub_model_id:
 hub_repo:
 hub_strategy: checkpoint
 hub_token:
-
-
-saves_per_epoch: 0
-warmup_steps: 100
-evals_per_epoch: 0
-eval_table_size:
-eval_max_new_tokens: 128
-max_steps: 750
-debug:
-deepspeed:
-weight_decay: 0.01
-fsdp:
-fsdp_config:
