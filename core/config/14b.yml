@@ -47,7 +47,7 @@ sample_packing: false
 save_steps: 0
 saves_per_epoch: 
 seed: 20
-sequence_len: 1024
+sequence_len: 2048
 bf16: auto
 strict: false
 tf32: false
