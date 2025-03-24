@@ -161,14 +161,14 @@ async def task_offer(
         if 1000000000 < total_bytes < 15000000000:
             pass
         else:
-            logger.info(f"模型大小: {total_bytes},只接1B以上")
+            logger.info(f"models total bytes: {total_bytes},only 1B+")
             return MinerTaskResponse(
                 message=f"I only accept 1B-11B jobs",
                 accepted=False,
             )
 
         if current_job_finish_time is None or current_time + timedelta(hours=1) > current_job_finish_time:
-            if 1 <= request.hours_to_complete <= 13:
+            if 1 < request.hours_to_complete <= 10:
                 logger.info("Accepting the offer - ty snr")
                 return MinerTaskResponse(message=f"🐸🐸", accepted=True)
             else:
