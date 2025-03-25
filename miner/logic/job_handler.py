@@ -85,24 +85,12 @@ def _load_and_modify_config(
     """
     Loads the config template and modifies it to create a new job config.
     """
-    api = HfApi()
-    model_info = api.model_info(model)
-    total_bytes = model_info.safetensors.total
-    #CONFIG_TEMPLATE_PATH_3B = CONFIG_DIR + "3b.yml"
-    #CONFIG_TEMPLATE_PATH_7B = CONFIG_DIR + "7b.yml"
-    #CONFIG_TEMPLATE_PATH_14B = CONFIG_DIR + "14b.yml"
-    if 5000000000 >= total_bytes >= 2200000000:
-        logger.info("Loading 3B config template")
-        with open(cst.CONFIG_TEMPLATE_PATH_3B, "r") as file:
+    patch = f"{model}.yml"
+
+    if os.path.exists(patch):
+        logger.info(f"Loading {model} config template")
+        with open(patch, "r") as file:
             config = yaml.safe_load(file)
-    elif 8000000000 >= total_bytes >= 5000000000:
-        logger.info("Loading 7B config template")
-        with open(cst.CONFIG_TEMPLATE_PATH_7B, "r") as file:
-            config = yaml.safe_load(file)
-    elif 15000000000 >= total_bytes >= 8000000001:
-        logger.info("Loading 14B config template")
-        with open(cst.CONFIG_TEMPLATE_PATH_14B, "r") as file:
-            config = yaml.safe_load(file)    
     else:
         logger.info("Loading 14B config template")
         with open(cst.CONFIG_TEMPLATE_PATH, "r") as file:
