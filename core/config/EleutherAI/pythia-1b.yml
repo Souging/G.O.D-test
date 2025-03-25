@@ -36,7 +36,7 @@ lora_r: 32
 lora_target_linear: true
 lr_scheduler: cosine
 max_steps: 600
-micro_batch_size: 7
+micro_batch_size: 9
 model_type: AutoModelForCausalLM
 num_epochs: 10
 optimizer: adamw_bnb_8bit
