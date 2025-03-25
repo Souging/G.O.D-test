@@ -7,7 +7,6 @@ from core.models.utility_models import DiffusionJob
 from core.models.utility_models import Job
 from core.models.utility_models import JobStatus
 from core.models.utility_models import TextJob
-# 导入我们新创建的本地训练函数（而不是Docker容器函数）
 from miner.logic.job_handler import start_tuning_local
 from miner.logic.job_handler import start_tuning_local_diffusion
 
@@ -31,10 +30,8 @@ class TrainingWorker:
                 break
             try:
                 if isinstance(job, TextJob):
-                    # 使用本地训练函数替代Docker容器函数
                     start_tuning_local(job)
                 elif isinstance(job, DiffusionJob):
-                    # 使用本地训练函数替代Docker容器函数
                     start_tuning_local_diffusion(job)
                 job.status = JobStatus.COMPLETED
             except Exception as e:
@@ -53,7 +50,5 @@ class TrainingWorker:
         return job.status if job else JobStatus.NOT_FOUND
 
     def shutdown(self):
-        # 放入None作为停止信号
         self.job_queue.put(None)
         self.thread.join()
-        # 不再需要关闭Docker客户端
