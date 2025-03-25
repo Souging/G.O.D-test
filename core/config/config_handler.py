@@ -42,7 +42,7 @@ def create_dataset_entry(
 
 def update_flash_attention(config: dict, model: str):
     # You might want to make this model-dependent
-    config["flash_attention"] = True
+    #config["flash_attention"] = True
     config["pad_to_sequence_len"] = False
     config["group_by_length"] = False
     return config
