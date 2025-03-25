@@ -153,19 +153,6 @@ async def task_offer(
         #if "llama" not in request.model.lower():
         #    return MinerTaskResponse(message="I'm not yet optimised and only accept llama-type jobs", accepted=False)
 
-        model_name = request.model
-        api = HfApi()
-        model_info = api.model_info(model_name)
-        total_bytes = model_info.safetensors.total
-
-        if 1000000000 < total_bytes < 15000000000:
-            pass
-        else:
-            logger.info(f"models total bytes: {total_bytes},only 1B+")
-            return MinerTaskResponse(
-                message=f"I only accept 1B-11B jobs",
-                accepted=False,
-            )
 
         if current_job_finish_time is None or current_time + timedelta(hours=1) > current_job_finish_time:
             if 1 < request.hours_to_complete <= 10:
