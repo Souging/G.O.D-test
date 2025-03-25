@@ -50,7 +50,7 @@ s2_attention:
 sample_packing: false
 save_steps: 0
 saves_per_epoch: 
-sequence_len: 1792
+sequence_len: 1664
 strict: false
 tf32: false
 tokenizer_type: AutoTokenizer
