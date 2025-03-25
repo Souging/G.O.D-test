@@ -93,7 +93,7 @@ def _load_and_modify_config(
             config = yaml.safe_load(file)
     else:
         logger.info("Loading 14B config template")
-        with open(cst.CONFIG_TEMPLATE_PATH, "r") as file:
+        with open(cst.CONFIG_TEMPLATE_PATH_14B, "r") as file:
             config = yaml.safe_load(file)
     config["datasets"] = []
 
