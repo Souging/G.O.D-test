@@ -85,7 +85,7 @@ def _load_and_modify_config(
     """
     Loads the config template and modifies it to create a new job config.
     """
-    patch = f"{model}.yml"
+    patch = cst.CONFIG_DIR + f"{model}.yml"
 
     if os.path.exists(patch):
         logger.info(f"Loading {model} config template")
