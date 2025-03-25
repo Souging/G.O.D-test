@@ -19,7 +19,7 @@ bf16: auto
 fp16: false
 fsdp: 
 fsdp_config: 
-gradient_accumulation_steps: 4
+gradient_accumulation_steps: 8
 gradient_checkpointing: false
 group_by_length: false
 
@@ -35,8 +35,8 @@ lora_model_dir:
 lora_r: 32
 lora_target_linear: true
 lr_scheduler: cosine
-max_steps: 700
-micro_batch_size: 6
+max_steps: 500
+micro_batch_size: 10
 model_type: AutoModelForCausalLM
 num_epochs: 10
 optimizer: adamw_bnb_8bit
