@@ -28,11 +28,11 @@ load_in_4bit: false
 load_in_8bit: false
 local_rank: 
 logging_steps: 1
-lora_alpha: 64
+lora_alpha: 32
 lora_dropout: 0.05
 lora_fan_in_fan_out: 
 lora_model_dir: 
-lora_r: 32
+lora_r: 16
 lora_target_linear: true
 lr_scheduler: cosine
 max_steps: 700
