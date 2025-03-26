@@ -23,7 +23,7 @@ gradient_accumulation_steps: 4
 gradient_checkpointing: false
 group_by_length: false
 
-learning_rate: 0.000202
+learning_rate: 1e-4
 load_in_4bit: false
 load_in_8bit: false
 local_rank: 
