@@ -46,7 +46,9 @@ def update_flash_attention(config: dict, model: str):
     config["pad_to_sequence_len"] = False
     config["group_by_length"] = False
     config["lora_dropout"] = 0.1
-    config["rslora"] = True
+    config["peft_use_rslora"] = True
+    config["peft_use_dora"] = True
+    
     config["lora_alpha"] = 128
     config["lora_r"] = 64
     config["max_steps"] = 700
