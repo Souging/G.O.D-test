@@ -51,7 +51,7 @@ sample_packing: false
 save_steps: 0
 saves_per_epoch: 
 seed: 20
-sequence_len: 1920
+sequence_len: 1792
 strict: false
 tf32: false
 tokenizer_type: AutoTokenizer
