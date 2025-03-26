@@ -38,7 +38,7 @@ lora_fan_in_fan_out:
 lora_target_linear: true
 lr_scheduler: cosine
 max_steps: 500
-micro_batch_size: 2
+micro_batch_size: 3
 model_type: AutoModelForCausalLM
 num_epochs: 10
 optimizer: adamw_bnb_8bit
@@ -51,7 +51,7 @@ sample_packing: false
 save_steps: 0
 saves_per_epoch: 
 seed: 20
-sequence_len: 1536
+sequence_len: 1920
 strict: false
 tf32: false
 tokenizer_type: AutoTokenizer
