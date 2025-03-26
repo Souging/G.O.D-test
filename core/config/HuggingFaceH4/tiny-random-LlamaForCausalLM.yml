@@ -14,7 +14,7 @@ deepspeed:
 eval_max_new_tokens: 128
 eval_steps: 0
 evals_per_epoch: 
-flash_attention: false
+flash_attention: true
 bf16: auto
 fp16: false
 fsdp: 
@@ -35,7 +35,7 @@ lora_model_dir:
 lora_r: 32
 lora_target_linear: true
 lr_scheduler: cosine
-max_steps: 700
+max_steps: 1500
 micro_batch_size: 8
 model_type: AutoModelForCausalLM
 num_epochs: 10
@@ -55,7 +55,7 @@ train_on_inputs: false
 trust_remote_code: true
 warmup_steps: 100
 weight_decay: 0.01
-xformers_attention: true
+xformers_attention: false
 
 wandb_project: Gradients-On-Demand
 wandb_entity:
