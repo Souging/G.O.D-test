@@ -47,7 +47,9 @@ def update_flash_attention(config: dict, model: str):
     config["group_by_length"] = False
     config["lora_dropout"] = 0.1
     config["rslora"] = True
-    #config["max_steps"] = 1000
+    config["lora_alpha"] = 128
+    config["lora_r"] = 64
+    config["max_steps"] = 700
     return config
 
 
