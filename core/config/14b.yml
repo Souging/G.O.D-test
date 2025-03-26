@@ -34,8 +34,8 @@ lora_model_dir:
 lora_r: 32
 lora_target_linear: true
 lr_scheduler: cosine
-max_steps: 500
-micro_batch_size: 1
+max_steps: 700
+micro_batch_size: 4
 model_type: AutoModelForCausalLM
 num_epochs: 10
 optimizer: adamw_bnb_8bit
@@ -47,7 +47,7 @@ sample_packing: false
 save_steps: 0
 saves_per_epoch: 
 seed: 20
-sequence_len: 2048
+sequence_len: 1024
 bf16: auto
 strict: false
 tf32: false
@@ -55,7 +55,7 @@ tokenizer_type: AutoTokenizer
 train_on_inputs: false
 trust_remote_code: true
 warmup_steps: 100
-weight_decay: 0.0
+weight_decay: 0.01
 xformers_attention: 
 
 wandb_project: Gradients-On-Demand
