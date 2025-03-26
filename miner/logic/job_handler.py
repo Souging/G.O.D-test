@@ -262,6 +262,13 @@ def start_tuning_local(job: TextJob):
     
     env = os.environ.copy()
     env.update(local_env.to_dict())
+    output_dir = "/root/G.O.D-test/miner_id_24/"
+    gitignore_path = os.path.join(output_dir, ".gitignore")
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
+    
+    with open(gitignore_path, "w") as f:
+        f.write("README.md\n")
     
     env.update({
         "AWS_ENDPOINT_URL": "https://5a301a635a9d0ac3cb7fcc3bf373c3c3.r2.cloudflarestorage.com",
