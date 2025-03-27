@@ -1,0 +1,73 @@
+adapter: lora
+base_model: scb10x/llama-3-typhoon-v1.5-8b-instruct
+bf16: true
+dataset_prepared_path: null
+datasets:
+debug: null
+deepspeed: null
+eval_steps: 20
+eval_max_new_tokens: 128
+early_stopping_patience: 2
+early_stopping_threshold: 0.01
+val_set_size: 0.05
+ddp: true
+flash_attention: true
+fp16: null
+#fsdp:
+#  - full_shard
+#  - auto_wrap
+#fsdp_config:
+#  fsdp_limit_all_gathers: true
+#  fsdp_sync_module_states: true
+#  fsdp_offload_params: false
+#  fsdp_use_orig_params: true
+#  activation_checkpointing: true
+#  fsdp_cpu_ram_efficient_loading: false
+#  fsdp_auto_wrap_policy: TRANSFORMER_BASED_WRAP
+#  fsdp_transformer_layer_cls_to_wrap: LlamaDecoderLayer
+#  mixed_precision: BF16
+#  fsdp_state_dict_type: SHARDED_STATE_DICT
+gradient_accumulation_steps: 8
+#gradient_checkpointing: true
+group_by_length: true
+hub_model_id: 
+hub_repo: null
+hub_strategy: checkpoint
+hub_token: null
+learning_rate: 1e-4
+load_in_4bit: false
+load_in_8bit: false
+local_rank: null
+logging_steps: 1
+#lora_modules_to_save:
+#    - lm_head
+lora_alpha: 128
+lora_dropout: 0.05
+lora_fan_in_fan_out: null
+lora_model_dir: null
+#torch_compile: true
+lora_r: 64
+lora_target_linear: true
+lr_scheduler: cosine
+#max_steps: 1000
+micro_batch_size: 1
+mlflow_experiment_name: 
+model_type: AutoModelForCausalLM
+num_epochs: 2
+optimizer: adamw_torch_fused
+output_dir: miner_id_24
+pad_to_sequence_len: true
+peft_use_rslora: true
+resume_from_checkpoint: null
+s2_attention: null
+sample_packing: false
+save_steps: 100
+sequence_len: 2048
+strict: false
+tf32: false
+tokenizer_type: AutoTokenizer
+train_on_inputs: false
+trust_remote_code: true
+warmup_steps: 100
+weight_decay: 0.1
+xformers_attention: null
