@@ -4,6 +4,7 @@ from trl import DPOTrainer, DPOConfig
 from unsloth import is_bfloat16_supported
 from unsloth import PatchDPOTrainer
 from transformers import Trainer, TrainingArguments
+from transformers import EarlyStoppingCallback
 import torch
 import torch.nn as nn
 
@@ -11,19 +12,20 @@ PatchDPOTrainer()
 
 dataset = load_dataset("json", data_files="/root/G.O.D-test/core/data/cf97adc43245b1bd_train_data.json")
 
+
 def format_example(example):
     return {
         "prompt": example["instruction"],  
         "chosen": example["chosen_response"],  
-        "rejected": example.get("rejected_response", "I can't answer that."), 
+        "rejected": example.get("rejected_response", "I can't answer that."),  
     }
 
-def is_valid_example(example):
-    return example["instruction"] is not None and example["chosen_response"] is not None
-
-dataset = dataset.filter(is_valid_example)
+if isinstance(dataset, dict):  
+    dataset = dataset["train"]
+dataset = dataset.train_test_split(test_size=0.2)
 dataset = dataset.map(format_example, num_proc=4)  
-
+train_dataset = dataset["train"]
+eval_dataset = dataset["test"]
 
 max_seq_length = 2048
 dtype = torch.bfloat16 if is_bfloat16_supported() else torch.float16
@@ -34,17 +36,21 @@ model, tokenizer = FastLanguageModel.from_pretrained(
     max_seq_length=max_seq_length,
     trust_remote_code=True, 
     dtype=dtype,
-    #load_in_4bit=True,  
+    load_in_8bit=False, 
+    load_in_4bit=False,
     device_map="cuda:0",
 )
 #tokenizer.padding_side = "left"
-
-#model = model.to("cuda")
+early_stopping = EarlyStoppingCallback(
+    early_stopping_patience=2,  
+    early_stopping_threshold=0.15, 
+)
 tokenizer.pad_token = tokenizer.eos_token
 tokenizer.padding_side = "right"
 model = FastLanguageModel.get_peft_model(
     model,
-    r=64,
+    r=32,
+    lora_alpha=32,
     target_modules = ["q_proj", "k_proj", "v_proj", "o_proj",
                       "gate_proj", "up_proj", "down_proj",],
     modules_to_save = ["lm_head"],
@@ -52,6 +58,7 @@ model = FastLanguageModel.get_peft_model(
     lora_dropout=0.1,
     bias="none",
     loftq_config = None,
+    random_state = 2888,
     #use_gradient_checkpointing = "unsloth",
 )
 
@@ -74,13 +81,18 @@ dpo_trainer = DPOTrainer(
         seed = 88,
         output_dir = "outputs",
         report_to = "none", # Use this for WandB etc
+        evaluation_strategy="steps",
+        eval_steps=2,
+        save_steps=2,
     ),
     beta = 0.1,
-    train_dataset = dataset["train"],
+    train_dataset = train_dataset,
+    eval_dataset = eval_dataset,
     # eval_dataset = raw_datasets["test"],
     tokenizer = tokenizer,
     max_length = 1024,
     max_prompt_length = 512,
+    callbacks=[early_stopping],
 )
 
 
