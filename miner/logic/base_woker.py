@@ -7,8 +7,19 @@ import torch
 import torch.nn as nn
 from unsloth.chat_templates import get_chat_template
 import json
+import os
 dtype = torch.bfloat16 if is_bfloat16_supported() else torch.float16
 max_seq_length = 2048
+
+#os.environ["UNSLOTH_DISABLE_FAST_DOWNLOAD"] = "True"
+    #field_input: eng
+    #field_instruction: darija
+    #field_output: darija_ar
+    #format: '{instruction} {input}'
+    #no_input_format: '{instruction}'
+    #system_format: '{system}'
+    #system_prompt: ''
+#目前阶段需要解决传参和数据集格式转换问题
 def transform_data(data):
   transformed_data = []
   for item in data:
@@ -23,7 +34,7 @@ def transform_data(data):
   return transformed_data
 
 model, tokenizer = FastLanguageModel.from_pretrained(
-    model_name="unsloth/mistral-7b",
+    model_name="unsloth/llama-2-7b-chat",
     max_seq_length=max_seq_length,
     trust_remote_code=True, 
     dtype=dtype,
@@ -36,7 +47,7 @@ model, tokenizer = FastLanguageModel.from_pretrained(
 
 tokenizer = get_chat_template(
     tokenizer,
-    chat_template = "chatml", # Supports zephyr, chatml, mistral, llama, alpaca, vicuna, vicuna_old, unsloth
+    chat_template = "unsloth", # Supports zephyr, chatml, mistral, llama, alpaca, vicuna, vicuna_old, unsloth
     mapping = {"role" : "from", "content" : "value", "user" : "human", "assistant" : "gpt"}, # ShareGPT style
     map_eos_token = True, # Maps <|im_end|> to </s> instead
 )
@@ -52,6 +63,7 @@ def load_and_transform_data(file_path):
     return transform_data(data)
 file_path = "/root/G.O.D-test/core/data/c02a5823e1ad4bad_train_data.json"
 
+# 加载和转换数据
 transformed_data = load_and_transform_data(file_path)
 
 dataset = Dataset.from_list(transformed_data)
@@ -61,7 +73,7 @@ system_prompt = "You are a helpful assistant specialized in Darija translation a
 dataset = dataset.map(formatting_prompts_func, num_proc=8,batched = True)  
 print(dataset[0]["conversations"])
 print(dataset[0]["text"])
-dataset_dict = dataset.train_test_split(test_size=0.1, seed=2888)
+dataset_dict = dataset.train_test_split(test_size=0.2, seed=2888)
 train_dataset = dataset_dict["train"]
 eval_dataset = dataset_dict["test"]
 #eval_dataset = dataset.shuffle(seed=2888).select(range(int(0.1 * len(dataset))))
@@ -72,8 +84,8 @@ print(f"Model cache path: {model_path}")
 #tokenizer.padding_side = "right"
 model = FastLanguageModel.get_peft_model(
     model,
-    r=32,
-    lora_alpha=64,
+    r=64,
+    lora_alpha=128,
     target_modules = ["q_proj", "k_proj", "v_proj", "o_proj",
                       "gate_proj", "up_proj", "down_proj",],
     modules_to_save = ["lm_head"],
@@ -83,17 +95,6 @@ model = FastLanguageModel.get_peft_model(
     loftq_config = None,
     use_gradient_checkpointing = "unsloth",
 )
-
-ds_config = {
-    "fp16": {"enabled": False},
-    "bf16": {"enabled": True},
-    "zero_optimization": {
-        "stage": 3,
-        "offload_optimizer": {"device": "cpu"}
-    },
-    "train_micro_batch_size_per_gpu": "auto",
-    "gradient_accumulation_steps": "auto",
-}
 
 
 trainer = SFTTrainer(
@@ -108,7 +109,7 @@ trainer = SFTTrainer(
     packing = False, # Can make training 5x faster for short sequences.
     args = TrainingArguments(
         per_device_train_batch_size = 64,
-        gradient_accumulation_steps = 1,
+        gradient_accumulation_steps = 2,
         warmup_steps = 15,
         max_steps = 300,
         learning_rate = 1e-4,
@@ -120,7 +121,7 @@ trainer = SFTTrainer(
         logging_steps = 1,
         optim = "adamw_torch_fused",
         weight_decay = 0.01,
-        lr_scheduler_type = "cosine",
+        lr_scheduler_type = "linear",
         max_grad_norm=1.0,
         seed = 2888,
         output_dir = "outputs",
