@@ -28,6 +28,7 @@ def format_example(example):
         "chosen": example["chosen_response"],  
         "rejected": example.get("rejected_response", "I can't answer that."),  
     }
+
 model, tokenizer = FastLanguageModel.from_pretrained(
     model_name="teknium/OpenHermes-2.5-Mistral-7B",
     max_seq_length=max_seq_length,
@@ -35,6 +36,8 @@ model, tokenizer = FastLanguageModel.from_pretrained(
     dtype=dtype,
     load_in_8bit=False, 
     load_in_4bit=False,
+    attn_implementation="flash_attention_2",
+    use_flash_attention_2=True,
     device_map="cuda:0",
 )
 
@@ -110,7 +113,7 @@ trainer = SFTTrainer(
     eval_dataset=eval_dataset,
     dataset_num_proc = 8,
     dataset_batch_size=1000, 
-    packing = True, # Can make training 5x faster for short sequences.
+    packing = False, # Can make training 5x faster for short sequences.
     args = TrainingArguments(
         per_device_train_batch_size = 64,
         gradient_accumulation_steps = 1,
@@ -121,6 +124,7 @@ trainer = SFTTrainer(
         eval_steps=50,
         fp16 = False,
         bf16 = True,
+        tf32=True,
         logging_steps = 1,
         optim = "adamw_torch_fused",
         weight_decay = 0.01,
@@ -130,6 +134,7 @@ trainer = SFTTrainer(
         output_dir = "outputs",
         dataloader_num_workers=8,
         dataloader_pin_memory=True, 
+        dataloader_persistent_workers=True,
         dataloader_prefetch_factor=2,
         #deepspeed="/root/G.O.D-test/ds.json",
         report_to = "none", # Use this for WandB etc
