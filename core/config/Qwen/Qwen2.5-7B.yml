@@ -79,7 +79,7 @@ system_prompt = "You are a helpful assistant specialized in Darija translation a
 dataset = dataset.map(formatting_prompts_func, num_proc=8,batched = True)  
 print(dataset[0]["conversations"])
 print(dataset[0]["text"])
-dataset_dict = dataset.train_test_split(test_size=0.1, seed=2888)
+dataset_dict = dataset.train_test_split(test_size=0.05, seed=2888)
 train_dataset = dataset_dict["train"]
 eval_dataset = dataset_dict["test"]
 #eval_dataset = dataset.shuffle(seed=2888).select(range(int(0.1 * len(dataset))))
@@ -90,11 +90,11 @@ print(f"Model cache path: {model_path}")
 #tokenizer.padding_side = "right"
 model = FastLanguageModel.get_peft_model(
     model,
-    r=64,
-    lora_alpha=128,
+    r=32,
+    lora_alpha=64,
     target_modules = ["q_proj", "k_proj", "v_proj", "o_proj",
                       "gate_proj", "up_proj", "down_proj",],
-    modules_to_save = ["lm_head"],
+    #modules_to_save = ["lm_head"],
     use_rslora=True,
     lora_dropout=0,
     bias="none",
@@ -103,7 +103,7 @@ model = FastLanguageModel.get_peft_model(
     #finetune_language_layers   = True,  # Should leave on!
     #finetune_attention_modules = True,  # Attention good for GRPO
     #finetune_mlp_modules       = True,  # SHould leave on always!
-    use_gradient_checkpointing = False,
+    use_gradient_checkpointing = False #"unsloth",
 )
 
 
@@ -118,11 +118,11 @@ trainer = SFTTrainer(
     #dataset_batch_size=500, 
     packing = False, # Can make training 5x faster for short sequences.
     args = TrainingArguments(
-        per_device_train_batch_size = 64,
-        gradient_accumulation_steps = 2,
+        per_device_train_batch_size = 48,
+        gradient_accumulation_steps = 1,
         #warmup_steps = 100,
         max_steps = 700,
-        learning_rate = 1e-4,
+        learning_rate = 2e-4,
         evaluation_strategy="steps",
         eval_steps=50,
         fp16 = False,
@@ -130,9 +130,9 @@ trainer = SFTTrainer(
         tf32=True,
         logging_steps = 1,
         optim = "adamw_torch_fused",
-        weight_decay = 0.01,
+        weight_decay = 0.05,
         lr_scheduler_type = "cosine",
-        max_grad_norm=0.5,
+        #max_grad_norm=0.5,
         seed = 2888,
         output_dir = "outputs",
         dataloader_num_workers=8,
