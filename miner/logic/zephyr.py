@@ -56,6 +56,8 @@ model, tokenizer = FastLanguageModel.from_pretrained(
     #attn_implementation="flash_attention_2",
     device_map="cuda:0",
 )
+model_path = model.config.name_or_path
+print(f"Model cache path: {model_path}")
 tokenizer.pad_token = tokenizer.eos_token
 tokenizer.padding_side = "right"
 model = FastLanguageModel.get_peft_model(
@@ -77,20 +79,21 @@ dpo_trainer = DPOTrainer(
     model = model,
     ref_model = None,
     args = DPOConfig(
-        per_device_train_batch_size = 8,
+        per_device_train_batch_size = 16,
         gradient_accumulation_steps = 6,
         warmup_ratio = 0.1,
         num_train_epochs = 3,
-        learning_rate = 1e-4,
-        fp16 = not is_bfloat16_supported(),
-        bf16 = is_bfloat16_supported(),
+        learning_rate = 2e-4,
+        fp16 = False,
+        bf16 = True,
         logging_steps = 1,
         max_steps = 100,
-        optim = "adamw_torch_fused",
+        optim = "adamw_8bit",
         weight_decay = 0.1,
-        lr_scheduler_type = "linear",
+        lr_scheduler_type = "constant_with_warmup",
         seed = 88,
         output_dir = "outputs",
+        warmup_steps=20,
         report_to = "none", # Use this for WandB etc
     ),
     beta = 0.1,
