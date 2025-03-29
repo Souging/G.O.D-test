@@ -20,12 +20,12 @@ max_seq_length = 2048
     #system_format: '{system}'
     #system_prompt: ''
 
-#目前阶段需要解决传参和数据集格式转换问题
+#目前阶段需要解决传参和数据集格式转换问题 根据数据集来定义per_device_train_batch_size和max_steps
 def transform_data(data):
   transformed_data = []
   for item in data:
-    topic = item["topic"]  # instruction
-    argument = item["argument"]  # output
+    topic = item["instruction"]  # instruction
+    argument = item["chosen_response"]  # output
     conversations = [
         {"role": "user", "content": topic},
         {"role": "assistant", "content": argument}
@@ -33,9 +33,9 @@ def transform_data(data):
 
     transformed_data.append({"conversations": conversations})  #
   return transformed_data
-
+#不支持模型列表  NousResearch/Yarn-Llama-2-13b-64k
 model, tokenizer = FastLanguageModel.from_pretrained(
-    model_name="NousResearch/Yarn-Llama-2-13b-64k",
+    model_name="Qwen/Qwen2.5-7B-Instruct",
     max_seq_length=max_seq_length,
     trust_remote_code=True, 
     dtype=dtype,
@@ -49,7 +49,7 @@ model, tokenizer = FastLanguageModel.from_pretrained(
 
 tokenizer = get_chat_template(
     tokenizer,
-    chat_template = "llama", # Supports zephyr, chatml, mistral, llama, alpaca, vicuna, vicuna_old, unsloth
+    chat_template = "unsloth", # Supports zephyr, chatml, mistral, llama, alpaca, vicuna, vicuna_old, unsloth
     mapping = {"role" : "from", "content" : "value", "user" : "human", "assistant" : "gpt"}, # ShareGPT style
     map_eos_token = True, # Maps <|im_end|> to </s> instead
 )
@@ -63,7 +63,7 @@ def load_and_transform_data(file_path):
     with open(file_path, "r", encoding="utf-8") as f:
         data = json.load(f)
     return transform_data(data)
-file_path = "/root/G.O.D-test/core/data/c02a5823e1ad4bad_train_data.json"
+file_path = "/root/G.O.D-test/core/data/cf97adc43245b1bd_train_data.json"
 
 # 加载和转换数据
 transformed_data = load_and_transform_data(file_path)
@@ -99,7 +99,7 @@ model = FastLanguageModel.get_peft_model(
     #finetune_language_layers   = True,  # Should leave on!
     #finetune_attention_modules = True,  # Attention good for GRPO
     #finetune_mlp_modules       = True,  # SHould leave on always!
-    use_gradient_checkpointing = "unsloth",
+    use_gradient_checkpointing = False,
 )
 
 
@@ -114,9 +114,9 @@ trainer = SFTTrainer(
     #dataset_batch_size=500, 
     packing = False, # Can make training 5x faster for short sequences.
     args = TrainingArguments(
-        per_device_train_batch_size = 48,
-        gradient_accumulation_steps = 2,
-        warmup_steps = 100,
+        per_device_train_batch_size = 72,
+        gradient_accumulation_steps = 1,
+        #warmup_steps = 100,
         max_steps = 700,
         learning_rate = 2e-4,
         evaluation_strategy="steps",
