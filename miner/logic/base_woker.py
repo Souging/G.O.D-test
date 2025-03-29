@@ -19,6 +19,7 @@ max_seq_length = 2048
     #no_input_format: '{instruction}'
     #system_format: '{system}'
     #system_prompt: ''
+
 #目前阶段需要解决传参和数据集格式转换问题
 def transform_data(data):
   transformed_data = []
@@ -40,6 +41,7 @@ model, tokenizer = FastLanguageModel.from_pretrained(
     dtype=dtype,
     load_in_8bit=False, 
     load_in_4bit=False,
+    #full_finetuning=True,
     #attn_implementation="flash_attention_2",
     #use_flash_attention_2=True,
     device_map="cuda:0",
@@ -93,6 +95,10 @@ model = FastLanguageModel.get_peft_model(
     lora_dropout=0,
     bias="none",
     loftq_config = None,
+    #finetune_vision_layers     = False, # Turn off for just text!
+    #finetune_language_layers   = True,  # Should leave on!
+    #finetune_attention_modules = True,  # Attention good for GRPO
+    #finetune_mlp_modules       = True,  # SHould leave on always!
     use_gradient_checkpointing = "unsloth",
 )
 
