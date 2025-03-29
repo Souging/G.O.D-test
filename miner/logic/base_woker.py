@@ -35,7 +35,7 @@ def transform_data(data):
   return transformed_data
 
 model, tokenizer = FastLanguageModel.from_pretrained(
-    model_name="unsloth/llama-2-7b-chat",
+    model_name="NousResearch/Yarn-Llama-2-13b-64k",
     max_seq_length=max_seq_length,
     trust_remote_code=True, 
     dtype=dtype,
@@ -49,7 +49,7 @@ model, tokenizer = FastLanguageModel.from_pretrained(
 
 tokenizer = get_chat_template(
     tokenizer,
-    chat_template = "unsloth", # Supports zephyr, chatml, mistral, llama, alpaca, vicuna, vicuna_old, unsloth
+    chat_template = "llama", # Supports zephyr, chatml, mistral, llama, alpaca, vicuna, vicuna_old, unsloth
     mapping = {"role" : "from", "content" : "value", "user" : "human", "assistant" : "gpt"}, # ShareGPT style
     map_eos_token = True, # Maps <|im_end|> to </s> instead
 )
@@ -75,7 +75,7 @@ system_prompt = "You are a helpful assistant specialized in Darija translation a
 dataset = dataset.map(formatting_prompts_func, num_proc=8,batched = True)  
 print(dataset[0]["conversations"])
 print(dataset[0]["text"])
-dataset_dict = dataset.train_test_split(test_size=0.2, seed=2888)
+dataset_dict = dataset.train_test_split(test_size=0.1, seed=2888)
 train_dataset = dataset_dict["train"]
 eval_dataset = dataset_dict["test"]
 #eval_dataset = dataset.shuffle(seed=2888).select(range(int(0.1 * len(dataset))))
@@ -111,14 +111,14 @@ trainer = SFTTrainer(
     max_seq_length = max_seq_length,
     eval_dataset=eval_dataset,
     dataset_num_proc = 8,
-    dataset_batch_size=1000, 
+    #dataset_batch_size=500, 
     packing = False, # Can make training 5x faster for short sequences.
     args = TrainingArguments(
-        per_device_train_batch_size = 64,
+        per_device_train_batch_size = 48,
         gradient_accumulation_steps = 2,
-        warmup_steps = 15,
-        max_steps = 300,
-        learning_rate = 1e-4,
+        warmup_steps = 100,
+        max_steps = 700,
+        learning_rate = 2e-4,
         evaluation_strategy="steps",
         eval_steps=50,
         fp16 = False,
@@ -127,7 +127,7 @@ trainer = SFTTrainer(
         logging_steps = 1,
         optim = "adamw_torch_fused",
         weight_decay = 0.01,
-        lr_scheduler_type = "linear",
+        lr_scheduler_type = "cosine",
         max_grad_norm=1.0,
         seed = 2888,
         output_dir = "outputs",
@@ -150,3 +150,4 @@ print(f"最终评估结果: {eval_results}")
 model.save_pretrained(output_dir)
 tokenizer.save_pretrained(output_dir)
 print(f"模型和 tokenizer 已保存到 {output_dir}")
+exit()
