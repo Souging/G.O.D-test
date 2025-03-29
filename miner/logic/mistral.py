@@ -63,7 +63,7 @@ dataset = Dataset.from_list(transformed_data)
 system_prompt = "You are a helpful assistant specialized in Darija translation and answering questions. Be precise and accurate." 
 
 
-dataset = dataset.map(formatting_prompts_func, num_proc=4,batched = True)  
+dataset = dataset.map(formatting_prompts_func, num_proc=8,batched = True)  
 print(dataset[0]["conversations"])
 print(dataset[0]["text"])
 dataset_dict = dataset.train_test_split(test_size=0.1, seed=2888)
@@ -108,7 +108,8 @@ trainer = SFTTrainer(
     dataset_text_field = "text",
     max_seq_length = max_seq_length,
     eval_dataset=eval_dataset,
-    dataset_num_proc = 4,
+    dataset_num_proc = 8,
+    dataset_batch_size=1000, 
     packing = True, # Can make training 5x faster for short sequences.
     args = TrainingArguments(
         per_device_train_batch_size = 64,
@@ -121,15 +122,16 @@ trainer = SFTTrainer(
         fp16 = False,
         bf16 = True,
         logging_steps = 1,
-        optim = "adamw_bnb_8bit",
+        optim = "adamw_torch_fused",
         weight_decay = 0.01,
         lr_scheduler_type = "cosine",
         max_grad_norm=1.0,
         seed = 2888,
         output_dir = "outputs",
-        dataloader_num_workers=4,
+        dataloader_num_workers=8,
+        dataloader_pin_memory=True, 
         dataloader_prefetch_factor=2,
-        deepspeed=ds_config,
+        #deepspeed="/root/G.O.D-test/ds.json",
         report_to = "none", # Use this for WandB etc
     ),
 )
