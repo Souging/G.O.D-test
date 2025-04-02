@@ -229,7 +229,7 @@ def start_tuning_local_diffusion(job: DiffusionJob):
             logger.info(f"Cleaning up temporary data at {train_data_path}")
             shutil.rmtree(train_data_path)
 
-def start_tuning_local(job: TextJob, gpu_id: int):
+def start_tuning_local(job: TextJob):  #def start_tuning_local(job: TextJob, gpu_id: int):
     logger.info("=" * 80)
     logger.info("STARTING LOCAL TUNING")
     logger.info("=" * 80)
