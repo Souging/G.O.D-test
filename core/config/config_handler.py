@@ -42,16 +42,13 @@ def create_dataset_entry(
 
 def update_flash_attention(config: dict, model: str):
     # You might want to make this model-dependent
-    #config["flash_attention"] = True
-    config["pad_to_sequence_len"] = False
-    config["group_by_length"] = False
-    config["lora_dropout"] = 0.1
-    config["peft_use_rslora"] = True
-    config["peft_use_dora"] = True
+    if any(keyword in model.lower() for keyword in {"llama", "mistral", "gemma", "pythia", "gpt", "falcon", "phi", "qwen", "deepseek"}):
+        config["flash_attention"] = True
+        config["xformers_attention"] = False    
+    else:
+        config["flash_attention"] = False
+        config["xformers_attention"] = True
     
-    config["lora_alpha"] = 128
-    config["lora_r"] = 64
-    config["max_steps"] = 700
     return config
 
 
