@@ -11,8 +11,9 @@ datasets:
 dataset_prepared_path:
 debug: 
 deepspeed: 
+eval_steps: 250
+save_steps: 250
 eval_max_new_tokens: 128
-eval_steps: 0
 early_stopping_patience: 1
 early_stopping_threshold: 0.15
 val_set_size: 0.05
@@ -41,8 +42,7 @@ lora_r: 128
 lora_target_linear: true
 lr_scheduler: cosine
 max_steps: 2000
-eval_steps: 250
-save_steps: 250
+
 micro_batch_size: 2
 model_type: AutoModelForCausalLM
 num_epochs: 10
