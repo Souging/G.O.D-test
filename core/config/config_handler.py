@@ -44,9 +44,11 @@ def update_flash_attention(config: dict, model: str):
     # You might want to make this model-dependent
     if any(keyword in model.lower() for keyword in {"llama", "mistral", "gemma", "pythia", "gpt", "falcon", "phi", "qwen", "deepseek"}):
         config["flash_attention"] = True
+        config["flash_attention_2"] = True
         config["xformers_attention"] = False    
     else:
         config["flash_attention"] = False
+        config["flash_attention_2"] = False
         config["xformers_attention"] = True
     
     return config
