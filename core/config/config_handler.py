@@ -42,7 +42,7 @@ def create_dataset_entry(
 
 def update_flash_attention(config: dict, model: str):
     # You might want to make this model-dependent
-    if any(keyword in model.lower() for keyword in {"llama", "mistral", "gemma", "pythia", "gpt", "falcon", "phi", "qwen", "deepseek"}):
+    if any(keyword in model.lower() for keyword in {"llama-2","llama-3","llama2","llama3", "mistral", "gemma", "pythia", "gpt", "falcon", "phi", "qwen", "deepseek","neural"}):
         config["flash_attention"] = True
         config["flash_attention_2"] = True
         config["xformers_attention"] = False    
