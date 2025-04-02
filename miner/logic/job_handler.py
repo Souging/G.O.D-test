@@ -2,6 +2,8 @@ import os
 import shutil
 import uuid
 import subprocess
+from pathlib import Path
+from typing import List, Tuple
 from dataclasses import dataclass
 
 import toml
@@ -22,8 +24,52 @@ from core.models.utility_models import DiffusionJob
 from core.models.utility_models import FileFormat
 from core.models.utility_models import TextJob
 
+HF_CACHE_DIR = os.getenv("HF_HOME", os.path.expanduser("~/.cache/huggingface")) 
+MAX_CACHE_SIZE_GB = 500
+DRY_RUN = False
 
 logger = get_logger(__name__)
+def get_dir_size(path: Path) -> int:
+    
+    total = 0
+    for entry in path.glob("**/*"):
+        if entry.is_file():
+            total += entry.stat().st_size
+    return total
+
+def get_oldest_model_dirs(cache_dir: Path) -> List[Tuple[Path, float]]:
+   
+    model_dirs = []
+    for model_dir in cache_dir.glob("*/models--*"):
+        if model_dir.is_dir():
+            last_access = os.path.getatime(model_dir)
+            model_dirs.append((model_dir, last_access))
+    
+    model_dirs.sort(key=lambda x: x[1])
+    return model_dirs
+
+def clean_hf_cache(cache_dir: Path, max_size_gb: int) -> None:
+    total_size_bytes = get_dir_size(cache_dir)
+    max_size_bytes = max_size_gb * 1024 ** 3 
+    if total_size_bytes <= max_size_bytes:
+        logger.info(f"当前缓存大小 {total_size_bytes / 1024**3:.2f} GB ≤ {max_size_gb} GB，无需清理。")
+        return
+    logger.info(f"当前缓存大小 {total_size_bytes / 1024**3:.2f} GB > {max_size_gb} GB，开始清理...")
+    model_dirs = get_oldest_model_dirs(cache_dir)
+    deleted_size = 0
+    for model_dir, _ in model_dirs:
+        if total_size_bytes - deleted_size <= max_size_bytes:
+            break  
+        dir_size = get_dir_size(model_dir)
+        if DRY_RUN:
+            logger.info(f"[DRY RUN] 将删除: {model_dir} ({dir_size / 1024**3:.2f} GB)")
+        else:
+            logger.info(f"删除: {model_dir} ({dir_size / 1024**3:.2f} GB)")
+            shutil.rmtree(model_dir)
+        deleted_size += dir_size
+    remaining_size = total_size_bytes - deleted_size
+    logger.info(f"清理完成，剩余缓存大小: {remaining_size / 1024**3:.2f} GB")
+
 def read_and_check_file(filename="1.txt"):
     try:
         with open(filename, 'r') as f:
@@ -303,6 +349,8 @@ def start_tuning_local(job: TextJob):  #def start_tuning_local(job: TextJob, gpu
         with open("1.txt", 'w') as f:
             f.write("0")
         shutil.rmtree("/root/G.O.D-test/miner_id_24")
+        cache_path = Path(HF_CACHE_DIR)
+        clean_hf_cache(cache_path, MAX_CACHE_SIZE_GB)
         logger.info(f"Clean")
         
 
@@ -314,6 +362,8 @@ def start_tuning_local(job: TextJob):  #def start_tuning_local(job: TextJob, gpu
             hf_api.update_repo_visibility(repo_id=repo, private=False, token=cst.HUGGINGFACE_TOKEN)
             logger.info(f"Successfully made repository {repo} public")
             shutil.rmtree("/root/G.O.D-test/miner_id_24")
+            cache_path = Path(HF_CACHE_DIR)
+            clean_hf_cache(cache_path, MAX_CACHE_SIZE_GB)
             logger.info(f"Clean")
             with open("1.txt", 'w') as f:
                 f.write("0")
