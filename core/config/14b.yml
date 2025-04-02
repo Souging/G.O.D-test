@@ -2,7 +2,7 @@ base_model: NousResearch/Meta-Llama-3-8B-Instruct
 model_type: AutoModelForCausalLM
 tokenizer_type: AutoTokenizer
 
-load_in_8bit: true
+load_in_8bit: false
 load_in_4bit: false
 strict: false
 
@@ -11,41 +11,42 @@ datasets:
 dataset_prepared_path:
 debug: 
 deepspeed: 
-eval_steps: 150
-save_steps: 150
+eval_steps: 100
+save_steps: 100
 eval_batch_size: 8
 eval_max_new_tokens: 128
 early_stopping_patience: 1
 early_stopping_threshold: 0.1
 val_set_size: 0.05
 evals_per_epoch: 
-#flash_attention: true
-attention: auto
+flash_attention: true
+#flash_attention_2: true
+#attention: auto
 fp16: false
 fsdp: 
 fsdp_config: 
 lora_modules_to_save:
   - lm_head
-gradient_accumulation_steps: 16
+gradient_accumulation_steps: 8
 gradient_checkpointing: false
 gradient_accumulation_optimization: true
-dataloader_num_workers: 8
+dataloader_num_workers: 16
 group_by_length: true
 adapter: lora
 learning_rate: 0.0001
 dataloader_pin_memory: true
 local_rank: 
 logging_steps: 1
-lora_alpha: 128
-lora_dropout: 0.1
+lora_alpha: 64
+lora_dropout: 0.05
 lora_fan_in_fan_out: 
 lora_model_dir: 
-lora_r: 64
+lora_r: 32
 lora_target_linear: true
 lr_scheduler: cosine
-max_steps: 2000
+max_steps: 1000
 max_grad_norm: 1.0
-micro_batch_size: 2
+micro_batch_size: 3
 model_type: AutoModelForCausalLM
 num_epochs: 10
 optimizer: adamw_torch_fused
@@ -67,8 +68,8 @@ tf32: true
 tokenizer_type: AutoTokenizer
 train_on_inputs: false
 trust_remote_code: true
-warmup_steps: 100
-weight_decay: 0.02
+warmup_steps: 50
+weight_decay: 0.01
 #xformers_attention: 
 
 wandb_project: Gradients-On-Demand
