@@ -30,8 +30,7 @@ dataloader_num_workers: 4
 group_by_length: true
 adapter: lora
 learning_rate: 0.0002
-load_in_4bit: false
-load_in_8bit: true
+
 local_rank: 
 logging_steps: 1
 lora_alpha: 256
