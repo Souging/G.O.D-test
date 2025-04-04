@@ -49,6 +49,8 @@ def update_flash_attention(config: dict, model: str):
     else:
         config["flash_attention"] = False
         config["flash_attention_2"] = False
+        config["sample_packing"] = False
+        config["eval_sample_packing"] = False
         config["xformers_attention"] = True
     
     return config
