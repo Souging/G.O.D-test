@@ -65,7 +65,7 @@ def update_flash_attention(config: dict, model: str):
         size = float(size_str)
         if size >= 8:
             config["micro_batch_size"] = 2
-            config["gradient_accumulation_steps"] = 12
+            config["gradient_accumulation_steps"] = 14
 
     return config
 
