@@ -25,7 +25,7 @@ from core.models.utility_models import FileFormat
 from core.models.utility_models import TextJob
 
 HF_CACHE_DIR = os.getenv("HF_HOME", os.path.expanduser("~/.cache/huggingface")) 
-MAX_CACHE_SIZE_GB = 500
+MAX_CACHE_SIZE_GB = 400
 DRY_RUN = False
 
 logger = get_logger(__name__)
@@ -82,7 +82,7 @@ def read_and_check_file(filename="1.txt"):
     except FileNotFoundError:
         with open(filename, 'w') as f:
             f.write("0")
-        return True
+        return False
 
 @dataclass
 class LocalEnvironmentDiffusion:
@@ -132,7 +132,7 @@ def _load_and_modify_config(
     Loads the config template and modifies it to create a new job config.
     """
     patch = cst.CONFIG_DIR + f"{model}.yml"
-
+    patch = cst.CONFIG_TEMPLATE_PATH_14B
     if os.path.exists(patch):
         logger.info(f"Loading {model} config template")
         with open(patch, "r") as file:
@@ -279,8 +279,8 @@ def start_tuning_local(job: TextJob):  #def start_tuning_local(job: TextJob, gpu
     logger.info("=" * 80)
     logger.info("STARTING LOCAL TUNING")
     logger.info("=" * 80)
-    with open("1.txt", 'w') as f:
-        f.write("1")
+    #with open("1.txt", 'w') as f:
+    #    f.write("1")
     config_filename = f"{job.job_id}.yml"
     config_path = os.path.join(cst.CONFIG_DIR, config_filename)
 
@@ -346,8 +346,8 @@ def start_tuning_local(job: TextJob):  #def start_tuning_local(job: TextJob, gpu
 
     except Exception as e:
         logger.error(f"Error processing job: {str(e)}")
-        with open("1.txt", 'w') as f:
-            f.write("0")
+        #with open("1.txt", 'w') as f:
+        #    f.write("0")
         shutil.rmtree("/root/G.O.D-test/miner_id_24")
         cache_path = Path(HF_CACHE_DIR)
         clean_hf_cache(cache_path, MAX_CACHE_SIZE_GB)
@@ -365,6 +365,6 @@ def start_tuning_local(job: TextJob):  #def start_tuning_local(job: TextJob, gpu
             cache_path = Path(HF_CACHE_DIR)
             clean_hf_cache(cache_path, MAX_CACHE_SIZE_GB)
             logger.info(f"Clean")
-            with open("1.txt", 'w') as f:
-                f.write("0")
+            #with open("1.txt", 'w') as f:
+            #    f.write("0")
         
