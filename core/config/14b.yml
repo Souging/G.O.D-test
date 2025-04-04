@@ -55,6 +55,9 @@ peft_use_dora: true
 resume_from_checkpoint: 
 #s2_attention: 
 sample_packing: true
+#sample_packing:
+#  enabled: "{{ 'true' if (percentile_25 < max_seq_length / 3) and (max_len <= max_seq_length) else 'false' }}"
+#  max_seq_length: 2048
 eval_sample_packing: true
 saves_per_epoch: 
 seed: 88
