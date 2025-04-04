@@ -1,6 +1,7 @@
 import os
 import uuid
 #import shutil
+import re
 import toml
 import yaml
 from fiber.logging_utils import get_logger
@@ -42,15 +43,30 @@ def create_dataset_entry(
 
 def update_flash_attention(config: dict, model: str):
     # You might want to make this model-dependent
-    if any(keyword in model.lower() for keyword in {"llama-2","llama-3","llama2","llama3", "mistral", "gemma", "pythia", "gpt", "falcon", "phi", "qwen", "deepseek","neural"}):
+
+    if any(keyword in model.lower() for keyword in {"llama-2","llama-3","llama2","llama3", "mistral", "gemma", "pythia", "gpt", "falcon", "phi", "qwen", "deepseek","neural","vikhr","solar"}):
         config["flash_attention"] = True
         config["flash_attention_2"] = True
-        config["xformers_attention"] = False    
+        config["xformers_attention"] = False
+
     else:
         config["flash_attention"] = False
         config["flash_attention_2"] = False
+        config["sample_packing"] = False
+        config["eval_sample_packing"] = False
         config["xformers_attention"] = True
-    
+    config["modules_to_save"] = ["lm_head"]
+
+
+    model_name_lower = model.lower() 
+    match1 = re.search(r"-(\d+(?:\.\d+)?)([b])", model_name_lower)
+    if match1:
+        size_str = match.group(1)
+        size = float(size_str)
+        if size >= 8:
+            config["micro_batch_size"] = 2
+            config["gradient_accumulation_steps"] = 12
+
     return config
 
 
