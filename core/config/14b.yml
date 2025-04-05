@@ -58,7 +58,8 @@ sample_packing: true
 #sample_packing:
 #  enabled: "{{ 'true' if (percentile_25 < max_seq_length / 3) and (max_len <= max_seq_length) else 'false' }}"
 #  max_seq_length: 2048
-eval_sample_packing: true
+eval_sample_packing: false
+remove_unused_columns: false
 saves_per_epoch: 
 seed: 88
 sequence_len: 2048
