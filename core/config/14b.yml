@@ -42,11 +42,11 @@ lora_model_dir:
 lora_r: 32
 lora_target_linear: true
 lr_scheduler: cosine
-max_steps: 1000
+max_steps: 2000
 max_grad_norm: 1.0
 micro_batch_size: 3
 model_type: AutoModelForCausalLM
-num_epochs: 8
+num_epochs: 10
 optimizer: adamw_torch_fused
 output_dir: miner_id_24
 pad_to_sequence_len: false
