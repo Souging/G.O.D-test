@@ -17,7 +17,7 @@ eval_batch_size: 16
 eval_max_new_tokens: 128
 early_stopping_patience: 1
 early_stopping_threshold: 0.005
-val_set_size: 0.05
+val_set_size: 0.1
 evals_per_epoch: 
 flash_attention: true
 #flash_attention_2: true
