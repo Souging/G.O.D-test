@@ -13,7 +13,7 @@ debug:
 deepspeed: 
 eval_steps: 100
 save_steps: 100
-eval_batch_size: 16
+eval_batch_size: 32
 eval_max_new_tokens: 128
 early_stopping_patience: 1
 early_stopping_threshold: 0.005
