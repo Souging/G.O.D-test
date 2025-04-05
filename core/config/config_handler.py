@@ -61,7 +61,7 @@ def update_flash_attention(config: dict, model: str):
     model_name_lower = model.lower() 
     match1 = re.search(r"-(\d+(?:\.\d+)?)([b])", model_name_lower)
     if match1:
-        size_str = match.group(1)
+        size_str = match1.group(1)
         size = float(size_str)
         if size >= 9:
             config["micro_batch_size"] = 2
