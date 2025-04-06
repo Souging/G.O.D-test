@@ -54,8 +54,7 @@ async def download_s3_file(
                 ) as response:
                     if response.status == 200:
                         with open(local_file_path, "wb") as f:
-                            async for chunk in response.content.iter_chunked(chunk_size):
-                                f.write(chunk)
+                            f.write(await response.read())
                         return local_file_path
                     else:
                         raise Exception(f"HTTP {response.status}: {await response.text()}")
