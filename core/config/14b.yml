@@ -13,7 +13,7 @@ debug:
 deepspeed: 
 eval_steps: 100
 save_steps: 100
-eval_batch_size: 24
+eval_batch_size: 32
 eval_max_new_tokens: 128
 early_stopping_patience: 1
 early_stopping_threshold: 0.005
@@ -36,13 +36,14 @@ dataloader_pin_memory: true
 local_rank: 
 logging_steps: 1
 lora_alpha: 64
-lora_dropout: 0.05
+lora_dropout: 0.1
 lora_fan_in_fan_out: 
 lora_model_dir: 
 lora_r: 32
 lora_target_linear: true
 lr_scheduler: cosine
 max_steps: 2000
+
 max_grad_norm: 1.0
 micro_batch_size: 3
 model_type: AutoModelForCausalLM
@@ -54,11 +55,11 @@ peft_use_dora: true
 #peft_use_rslora: true
 resume_from_checkpoint: 
 #s2_attention: 
-sample_packing: false
+sample_packing: true
 #sample_packing:
 #  enabled: "{{ 'true' if (percentile_25 < max_seq_length / 3) and (max_len <= max_seq_length) else 'false' }}"
 #  max_seq_length: 2048
-eval_sample_packing: false
+eval_sample_packing: true
 #remove_unused_columns: false
 saves_per_epoch: 
 seed: 88
