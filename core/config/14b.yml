@@ -13,7 +13,7 @@ debug:
 deepspeed: 
 eval_steps: 100
 save_steps: 100
-eval_batch_size: 32
+eval_batch_size: 24
 eval_max_new_tokens: 128
 early_stopping_patience: 1
 early_stopping_threshold: 0.005
@@ -25,7 +25,7 @@ flash_attention: true
 fp16: false
 fsdp: 
 fsdp_config: 
-gradient_accumulation_steps: 10
+gradient_accumulation_steps: 8
 gradient_checkpointing: false
 gradient_accumulation_optimization: true
 dataloader_num_workers: 16
@@ -46,7 +46,7 @@ max_steps: 2000
 max_grad_norm: 1.0
 micro_batch_size: 3
 model_type: AutoModelForCausalLM
-num_epochs: 10
+num_epochs: 5
 optimizer: adamw_torch_fused
 output_dir: miner_id_24
 pad_to_sequence_len: false
@@ -54,11 +54,11 @@ peft_use_dora: true
 #peft_use_rslora: true
 resume_from_checkpoint: 
 #s2_attention: 
-sample_packing: true
+sample_packing: false
 #sample_packing:
 #  enabled: "{{ 'true' if (percentile_25 < max_seq_length / 3) and (max_len <= max_seq_length) else 'false' }}"
 #  max_seq_length: 2048
-eval_sample_packing: true
+eval_sample_packing: false
 #remove_unused_columns: false
 saves_per_epoch: 
 seed: 88
