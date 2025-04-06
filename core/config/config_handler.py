@@ -44,7 +44,7 @@ def create_dataset_entry(
 def update_flash_attention(config: dict, model: str):
     # You might want to make this model-dependent
 
-    if any(keyword in model.lower() for keyword in {"llama-2","llama-3","llama2","llama3", "mistral", "gemma", "pythia", "falcon", "phi", "qwen", "deepseek","neural","vikhr","solar","yi","vicuna"}):
+    if any(keyword in model.lower() for keyword in {"llama-2","llama-3","llama2","llama3", "mistral", "gemma", "pythia", "falcon", "phi", "qwen", "deepseek","neural","vikhr","solar","yi","vicuna","seal"}):
         config["flash_attention"] = True
         config["flash_attention_2"] = True
         config["xformers_attention"] = False
@@ -59,6 +59,9 @@ def update_flash_attention(config: dict, model: str):
 
 
     model_name_lower = model.lower() 
+    if model == "jingyeom/seal3.1.6n_7b":
+        model_name_lower = "jingyeom/seal3.1.6n-7b"
+    
     match1 = re.search(r"-(\d+(?:\.\d+)?)([b])", model_name_lower)
     if match1:
         size_str = match1.group(1)
