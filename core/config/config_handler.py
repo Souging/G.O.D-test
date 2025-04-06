@@ -52,8 +52,8 @@ def update_flash_attention(config: dict, model: str):
     else:
         config["flash_attention"] = False
         config["flash_attention_2"] = False
-        config["sample_packing"] = False
-        config["eval_sample_packing"] = False
+        #config["sample_packing"] = False
+        #config["eval_sample_packing"] = False
         config["xformers_attention"] = True
     config["modules_to_save"] = ["lm_head"]
 
@@ -63,9 +63,22 @@ def update_flash_attention(config: dict, model: str):
     if match1:
         size_str = match1.group(1)
         size = float(size_str)
+        if size <= 4:
+            config["lora_r"] = 128
+            config["lora_alpha"] = 256
+            config["micro_batch_size"] = 4
+            config["gradient_accumulation_steps"] = 10
+        
         if size >= 9:
+            config["lora_r"] = 64
+            config["lora_alpha"] = 128
             config["micro_batch_size"] = 2
-            config["gradient_accumulation_steps"] = 14
+            config["gradient_accumulation_steps"] = 10
+        if size >= 20:
+            config["micro_batch_size"] = 1
+            config["lora_r"] = 128
+            config["lora_alpha"] = 256
+            config["gradient_accumulation_steps"] = 12    
 
     return config
 
