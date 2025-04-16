@@ -10,9 +10,10 @@ from pydantic import model_validator
 
 from core import constants as cst
 from core.models.utility_models import DPODatasetType
-from core.models.utility_models import InstructDatasetType
 from core.models.utility_models import FileFormat
+from core.models.utility_models import ImageModelType
 from core.models.utility_models import ImageTextPair
+from core.models.utility_models import InstructDatasetType
 from core.models.utility_models import JobStatus
 from core.models.utility_models import MinerTaskResult
 from core.models.utility_models import TaskMinerResult
@@ -56,6 +57,7 @@ class TrainRequestImage(TrainRequest):
         description="Link to dataset zip file",
         min_length=1,
     )
+    model_type: ImageModelType = ImageModelType.SDXL
 
 
 class TrainResponse(BaseModel):
@@ -109,15 +111,16 @@ class MinerTaskResponse(BaseModel):
     accepted: bool
 
 
-class InstructDatasetColumnsResponse(BaseModel):
-    field_instruction: str
-    field_input: str | None = None
-    field_output: str | None = None
-
 class DpoDatasetColumnsResponse(BaseModel):
     field_prompt: str
     field_chosen: str | None = None
     field_rejected: str | None = None
+
+
+class InstructDatasetColumnsResponse(BaseModel):
+    field_instruction: str
+    field_input: str | None = None
+    field_output: str | None = None
 
 
 class NewTaskRequest(BaseModel):
@@ -141,7 +144,7 @@ class NewTaskRequestInstructText(NewTaskRequest):
     no_input_format: None = None
 
     # Turn off protected namespace for model
-    model_config = {"protected_namespaces": ()}
+    model_config = ConfigDict(protected_namespaces=())
 
     @model_validator(mode="before")
     def convert_empty_strings(cls, values: dict) -> dict:
@@ -150,6 +153,7 @@ class NewTaskRequestInstructText(NewTaskRequest):
             if field in values and isinstance(values[field], str):
                 values[field] = values[field].strip() or None
         return values
+
 
 class NewTaskRequestDPO(NewTaskRequest):
     field_prompt: str = Field(..., description="The column name for the prompt", examples=["prompt"])
@@ -179,6 +183,8 @@ class NewTaskRequestDPO(NewTaskRequest):
             if field in values and isinstance(values[field], str):
                 values[field] = values[field].strip() or None
         return values
+
+
 class NewTaskRequestImage(NewTaskRequest):
     model_repo: str = Field(..., description="The model repository to use")
     image_text_pairs: list[ImageTextPair] = Field(
@@ -190,13 +196,18 @@ class NewTaskRequestImage(NewTaskRequest):
     ds_id: str = Field(
         default_factory=lambda: str(uuid4()), description="A ds name. The actual dataset is provided via the image_text_pairs"
     )
+    model_type: ImageModelType = ImageModelType.SDXL
 
 
-class NewTaskWithFixedDatasetsRequest(NewTaskRequestText):
+class NewTaskWithFixedDatasetsRequest(NewTaskRequestInstructText):
     ds_repo: str | None = Field(None, description="Optional: The original repository of the dataset")
+    file_format: FileFormat = Field(
+        FileFormat.S3, description="The format of the dataset", examples=[FileFormat.HF, FileFormat.S3]
+    )
     training_data: str = Field(..., description="The prepared training dataset")
     synthetic_data: str = Field(..., description="The prepared synthetic dataset")
     test_data: str = Field(..., description="The prepared test dataset")
+
 
 class NewTaskWithCustomDatasetRequest(NewTaskRequestInstructText):
     ds_repo: str | None = Field(None, description="Optional: The original repository of the dataset")
@@ -258,7 +269,8 @@ class InstructTextTaskDetails(TaskDetails):
     system_format: None = Field(None, description="How to format the `system (prompt)`", examples=["{system}"])
 
     # Turn off protected namespace for model
-    model_config = {"protected_namespaces": ()}
+    model_config = ConfigDict(protected_namespaces=())
+
 
 class DpoTaskDetails(TaskDetails):
     task_type: TaskType = TaskType.DPOTASK
@@ -280,11 +292,11 @@ class DpoTaskDetails(TaskDetails):
     model_config = ConfigDict(protected_namespaces=())
 
 
-
 class ImageTaskDetails(TaskDetails):
     task_type: TaskType = TaskType.IMAGETASK
     image_text_pairs: list[ImageTextPair]
     base_model_repository: str = Field(..., description="The repository for the model")
+    model_type: ImageModelType = ImageModelType.SDXL
 
 
 class TaskListResponse(BaseModel):
@@ -296,3 +308,12 @@ class TaskListResponse(BaseModel):
 class LeaderboardRow(BaseModel):
     hotkey: str
     stats: AllNodeStats
+
+
+class ImageModelInfo(BaseModel):
+    model_id: str
+    model_type: ImageModelType
+
+
+class ImageModelsResponse(BaseModel):
+    models: list[ImageModelInfo]
