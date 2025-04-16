@@ -5,7 +5,8 @@ import subprocess
 from pathlib import Path
 from typing import List, Tuple
 from dataclasses import dataclass
-
+import json
+import pandas as pd
 import toml
 import yaml
 from fiber.logging_utils import get_logger
@@ -18,10 +19,10 @@ from core.config.config_handler import save_config_toml
 from core.config.config_handler import update_flash_attention
 from core.config.config_handler import update_model_info
 from core.dataset.prepare_diffusion_dataset import prepare_dataset
-from core.models.utility_models import CustomDatasetType
-from core.models.utility_models import DatasetType
 from core.models.utility_models import DiffusionJob
+from core.models.utility_models import DPODatasetType
 from core.models.utility_models import FileFormat
+from core.models.utility_models import InstructDatasetType
 from core.models.utility_models import TextJob
 
 HF_CACHE_DIR = os.getenv("HF_HOME", os.path.expanduser("~/.cache/huggingface")) 
@@ -123,7 +124,7 @@ class LocalEnvironment:
 def _load_and_modify_config(
     dataset: str,
     model: str,
-    dataset_type: DatasetType | CustomDatasetType,
+    dataset_type: InstructDatasetType | DPODatasetType,,
     file_format: FileFormat,
     task_id: str,
     expected_repo_name: str | None,
@@ -142,10 +143,11 @@ def _load_and_modify_config(
         with open(cst.CONFIG_TEMPLATE_PATH_14B, "r") as file:
             config = yaml.safe_load(file)
     config["datasets"] = []
-
+    
     dataset_entry = create_dataset_entry(dataset, dataset_type, file_format)
     config["datasets"].append(dataset_entry)
-
+    if isinstance(dataset_type, DPODatasetType):
+        config["rl"] = "dpo"
     config = update_flash_attention(config, model)
     config = update_model_info(config, model, task_id, expected_repo_name)
     config["mlflow_experiment_name"] = dataset
@@ -182,7 +184,7 @@ def create_job_text(
     job_id: str,
     dataset: str,
     model: str,
-    dataset_type: DatasetType | CustomDatasetType,
+    dataset_type: InstructDatasetType,
     file_format: FileFormat,
     expected_repo_name: str | None,
 ):
@@ -216,64 +218,6 @@ def run_command(cmd, env=None):
     if return_code != 0:
         raise subprocess.CalledProcessError(return_code, cmd)
 
-
-def start_tuning_local_diffusion(job: DiffusionJob):
-    logger.info("=" * 80)
-    logger.info("STARTING LOCAL DIFFUSION TUNING")
-    logger.info("=" * 80)
-
-    config_path = os.path.join(cst.CONFIG_DIR, f"{job.job_id}.toml")
-
-    config = _load_and_modify_config_diffusion(job.model, job.job_id, job.expected_repo_name)
-    save_config_toml(config, config_path)
-
-    logger.info(config)
-
-    prepare_dataset(
-        training_images_zip_path=job.dataset_zip,
-        training_images_repeat=cst.DIFFUSION_REPEATS,
-        instance_prompt=cst.DIFFUSION_DEFAULT_INSTANCE_PROMPT,
-        class_prompt=cst.DIFFUSION_DEFAULT_CLASS_PROMPT,
-        job_id=job.job_id,
-    )
-
-    local_env = LocalEnvironmentDiffusion(
-        huggingface_token=cst.HUGGINGFACE_TOKEN, wandb_token=cst.WANDB_TOKEN, job_id=job.job_id
-    )
-    
-    env = os.environ.copy()
-    env.update(local_env.to_dict())
-    
-    env.update({
-        "CONFIG_DIR": "/dataset/configs",
-        "OUTPUT_DIR": "/dataset/outputs",
-        "DATASET_DIR":"/dataset/images"
-    })
-
-    try:
-        if cst.HUGGINGFACE_TOKEN:
-            run_command("huggingface-cli login --token " + cst.HUGGINGFACE_TOKEN, env)
-        
-        sd_scripts_path = os.path.expanduser("~/sd-scripts")  # 调整为你的sd-scripts实际路径
-        train_cmd = (
-            f"accelerate launch --dynamo_backend no --dynamo_mode default "
-            f"--mixed_precision bf16 --num_processes 1 --num_machines 1 "
-            f"--num_cpu_threads_per_process 2 {sd_scripts_path}/sdxl_train_network.py "
-            f"--config_file {config_path}"
-        )
-        
-        logger.info(f"Running command: {train_cmd}")
-        run_command(train_cmd, env)
-
-    except Exception as e:
-        logger.error(f"Error processing job: {str(e)}")
-        raise
-
-    finally:
-        train_data_path = f"{cst.DIFFUSION_DATASET_DIR}/{job.job_id}"
-        if os.path.exists(train_data_path):
-            logger.info(f"Cleaning up temporary data at {train_data_path}")
-            shutil.rmtree(train_data_path)
 
 def start_tuning_local(job: TextJob):  #def start_tuning_local(job: TextJob, gpu_id: int):
     logger.info("=" * 80)
@@ -326,6 +270,7 @@ def start_tuning_local(job: TextJob):  #def start_tuning_local(job: TextJob, gpu
     })
 
     try:
+        
         if job.file_format != FileFormat.HF and os.path.exists(job.dataset):
             data_dir = os.path.join(os.path.dirname(os.path.abspath(cst.CONFIG_DIR)), "data")
             os.makedirs(data_dir, exist_ok=True)
@@ -336,6 +281,9 @@ def start_tuning_local(job: TextJob):  #def start_tuning_local(job: TextJob, gpu
             if not os.path.exists(target_path):
                 shutil.copy(job.dataset, target_path)
                 logger.info(f"Copied dataset to {target_path}")
+        if isinstance(job.dataset_type, DPODatasetType):
+            if job.file_format == FileFormat.JSON:
+                _adapt_columns_for_dpo_dataset(job.dataset, job.dataset_type, True)
         if cst.HUGGINGFACE_TOKEN:
             run_command("huggingface-cli login --token " + cst.HUGGINGFACE_TOKEN + " --add-to-git-credential", env)
         
@@ -368,3 +316,67 @@ def start_tuning_local(job: TextJob):  #def start_tuning_local(job: TextJob, gpu
             #with open("1.txt", 'w') as f:
             #    f.write("0")
         
+def _dpo_format_prompt(row, format_str):
+    result = format_str
+    if "{prompt}" in format_str and cst.DPO_DEFAULT_FIELD_PROMPT in row and pd.notna(row[cst.DPO_DEFAULT_FIELD_PROMPT]):
+        result = result.replace("{prompt}", str(row[cst.DPO_DEFAULT_FIELD_PROMPT]))
+    if "{system}" in format_str and cst.DPO_DEFAULT_FIELD_SYSTEM in row and pd.notna(row[cst.DPO_DEFAULT_FIELD_SYSTEM]):
+        result = result.replace("{system}", str(row[cst.DPO_DEFAULT_FIELD_SYSTEM]))
+    return result
+
+
+def _dpo_format_chosen(row, format_str):
+    result = format_str
+    if "{chosen}" in format_str and cst.DPO_DEFAULT_FIELD_CHOSEN in row and pd.notna(row[cst.DPO_DEFAULT_FIELD_CHOSEN]):
+        result = result.replace("{chosen}", str(row[cst.DPO_DEFAULT_FIELD_CHOSEN]))
+    if "{prompt}" in format_str and cst.DPO_DEFAULT_FIELD_PROMPT in row and pd.notna(row[cst.DPO_DEFAULT_FIELD_PROMPT]):
+        result = result.replace("{prompt}", str(row[cst.DPO_DEFAULT_FIELD_PROMPT]))
+    if "{system}" in format_str and cst.DPO_DEFAULT_FIELD_SYSTEM in row and pd.notna(row[cst.DPO_DEFAULT_FIELD_SYSTEM]):
+        result = result.replace("{system}", str(row[cst.DPO_DEFAULT_FIELD_SYSTEM]))
+    return result
+
+
+def _dpo_format_rejected(row, format_str):
+    result = format_str
+    if "{rejected}" in format_str and cst.DPO_DEFAULT_FIELD_REJECTED in row and pd.notna(row[cst.DPO_DEFAULT_FIELD_REJECTED]):
+        result = result.replace("{rejected}", str(row[cst.DPO_DEFAULT_FIELD_REJECTED]))
+    if "{prompt}" in format_str and cst.DPO_DEFAULT_FIELD_PROMPT in row and pd.notna(row[cst.DPO_DEFAULT_FIELD_PROMPT]):
+        result = result.replace("{prompt}", str(row[cst.DPO_DEFAULT_FIELD_PROMPT]))
+    if "{system}" in format_str and cst.DPO_DEFAULT_FIELD_SYSTEM in row and pd.notna(row[cst.DPO_DEFAULT_FIELD_SYSTEM]):
+        result = result.replace("{system}", str(row[cst.DPO_DEFAULT_FIELD_SYSTEM]))
+    return result
+def _adapt_columns_for_dpo_dataset(dataset_path: str, dataset_type: DPODatasetType, apply_formatting: bool = False):
+    """
+    Transform a DPO JSON dataset file to match axolotl's `chatml.argilla` expected column names.
+
+    Args:
+        dataset_path: Path to the JSON dataset file
+        dataset_type: DPODatasetType with field mappings
+        apply_formatting: If True, apply formatting templates to the content
+    """
+    with open(dataset_path, 'r') as f:
+        data = json.load(f)
+    df = pd.DataFrame(data)
+
+    column_mapping = {
+        dataset_type.field_prompt: cst.DPO_DEFAULT_FIELD_PROMPT,
+        dataset_type.field_system: cst.DPO_DEFAULT_FIELD_SYSTEM,
+        dataset_type.field_chosen: cst.DPO_DEFAULT_FIELD_CHOSEN,
+        dataset_type.field_rejected: cst.DPO_DEFAULT_FIELD_REJECTED
+    }
+    df = df.rename(columns=column_mapping)
+
+    if apply_formatting:
+        if dataset_type.prompt_format and dataset_type.prompt_format != "{prompt}":
+            format_str = dataset_type.prompt_format
+            df[cst.DPO_DEFAULT_FIELD_PROMPT] = df.apply(lambda row: _dpo_format_prompt(row, format_str), axis=1)
+        if dataset_type.chosen_format and dataset_type.chosen_format != "{chosen}":
+            format_str = dataset_type.chosen_format
+            df[cst.DPO_DEFAULT_FIELD_CHOSEN] = df.apply(lambda row: _dpo_format_chosen(row, format_str), axis=1)
+        if dataset_type.rejected_format and dataset_type.rejected_format != "{rejected}":
+            format_str = dataset_type.rejected_format
+            df[cst.DPO_DEFAULT_FIELD_REJECTED] = df.apply(lambda row: _dpo_format_rejected(row, format_str), axis=1)
+
+    output_data = df.to_dict(orient='records')
+    with open(dataset_path, 'w') as f:
+        json.dump(output_data, f, indent=2)
