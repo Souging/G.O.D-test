@@ -147,8 +147,12 @@ async def task_offer(
         else:
             current_job_finish_time = None
         current_time = datetime.now()
-        if request.task_type != TaskType.TEXTTASK:
-            return MinerTaskResponse(message="This endpoint only accepts text tasks", accepted=False)
+        if request.task_type not in [TaskType.INSTRUCTTEXTTASK, TaskType.DPOTASK]:
+            return MinerTaskResponse(
+                message=f"This endpoint only accepts text tasks: "
+                        f"{TaskType.INSTRUCTTEXTTASK} and {TaskType.DPOTASK}",
+                accepted=False
+            )
 
         #if "llama" not in request.model.lower():
         #    return MinerTaskResponse(message="I'm not yet optimised and only accept llama-type jobs", accepted=False)
